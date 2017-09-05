@@ -6,9 +6,9 @@
   "scripts": {
     "clean": "rimraf dist",
     "copy": "cp  -f -r app/* dist/",
-    "build:webpack": "NODE_ENV=production webpack --progress --colors --config ./webpack.config.js",
+    "build:webpack": "webpack --progress --colors --config ./webpack.config.js",
     "build": "npm run clean && npm run build:webpack && npm run copy",
-    "start": "NODE_ENV=production node server/server.js",
+    "start": "node server/server.js",
     "dev": "NODE_ENV=development node server/server.js",
     "lint": "eslint ./app;",
     "postinstall": "npm run build"
