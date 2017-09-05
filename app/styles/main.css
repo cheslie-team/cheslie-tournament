@@ -1,0 +1,125 @@
+@import url(https://fonts.googleapis.com/css?family=Amatic+SC);
+@import url(https://fonts.googleapis.com/css?family=Josefin+Sans);
+
+#mapContainer{
+  position: fixed;
+  top: 0px;
+  bottom:  0px;
+  right: 0;
+  left: 38%;
+}
+
+#map{
+	position:absolute; 
+	top:0; 
+	bottom:0; 
+	width:100%;
+}
+
+.mapboxgl-popup{
+	max-width: 420px;
+}
+
+.selectedCard{
+	// background-color: rgba(128, 128, 128, 0.09) !important;
+	height: 350px !important;
+}
+
+.marketCard{
+	height: 180px;
+	transition: height 0.5s!important;
+    -moz-transition: height 0.5s !important; /* Firefox 4 */
+    -webkit-transition: height 0.5s !important; /* Safari and Chrome */
+    -o-transition: height 0.5s !important; /* Opera */
+}
+
+.searchBox{
+	z-index: 1;
+	left: 10px;
+	top: 7px;
+	width: 240px;
+}
+
+.ui .input{
+	width: 240px;
+}
+
+.ui.menu .item:before {
+    width: 0px;
+}
+
+.ui.menu.fixed{
+    width: inherit;
+}
+
+#links{
+	    position: absolute;
+    bottom: 10px;
+    z-index: 10;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.45);
+    border-radius: 10px;
+}
+
+// #infoBox{
+// 	z-index: 10;
+//     background-color: rgba(255, 255, 255, 0.90);
+//     position: absolute;
+//     left: 0;
+//     right: 0;
+//     width: 300px;
+//     border-radius: 10px;
+//     padding: 2px;
+//     padding-left: 8px;
+//     margin-left: auto;
+//     margin-right: auto;
+//     margin-top: 10px;
+// }
+
+.sidebar.icon{
+	padding:8px;
+	cursor: pointer; 
+}
+
+#sidebarButton{
+	z-index: 1;
+    position: fixed;
+    right: 10px;
+    top: 10px;
+}
+
+
+#landingBackground{
+	  background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('https://images.unsplash.com/photo-1432821596592-e2c18b78144f') no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+    display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#landingBackground button{
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+}
+
+#headingBox{
+	color: white;
+	text-align: center;
+}
+
+#headingBox h1{
+	font-family: 'Amatic SC', cursive;
+	font-size: 8em;
+}
+
+#headingBox h3{
+	font-family: 'Josefin Sans', sans-serif;
+	font-size: 2em;
+}

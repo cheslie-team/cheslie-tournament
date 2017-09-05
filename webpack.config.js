@@ -1,9 +1,9 @@
+var path = require('path');
+var webpack = require('webpack');
+
 module.exports = {
-  entry: [
-    'webpack-dev-server/client?http://localhost:8080',
-    'webpack/hot/only-dev-server',
-    './src/index.js'
-  ],
+  context:  path.join(__dirname,  'app'),
+  entry: "./entry.jsx",
   module: {
     loaders: [{
       test: /\.jsx?$/,
@@ -15,12 +15,8 @@ module.exports = {
     extensions: ['*', '.js', '.jsx']
   },
   output: {
-    path: __dirname + '/dist',
-    publicPath: '/',
+    path: path.join(__dirname, 'dist', 'assets'),
+    publicPath: '/assets/',
     filename: 'bundle.js'
   },
-  devServer: {
-    contentBase: './dist',
-    hot: true
-  }
-};
+}
