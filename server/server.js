@@ -1,41 +1,53 @@
 'use strict';
+var express = require('express'),
+  app = express(),
+  server = require('http').Server(app),
+  io = require('socket.io')(server),
+  path = require('path'),
+  webpack = require('webpack'),
+  webpackDevMiddleware = require('webpack-dev-middleware'),
+  webpackHotMiddleware = require('webpack-hot-middleware'),
+  webpackconfig = require('../webpack.config.js'),
+  compiler = webpack(webpackconfig),
+  Tournement = require('./tournement.js'),
+  Player = require('./player.js'),
+  feed = require('./feed.js')(io),
+  players = [];
 
-var express = require('express');
-var webpack = require('webpack');
-var path = require('path');
+const PORT = process.env.PORT || 2208,
+  IS_DEV = process.env.NODE_ENV === 'development';
 
-// var config = require('./config/environment');
-// var models = require('./models');
-var webpackconfig = require('../webpack.config.js');
-var compiler = webpack(webpackconfig);
-const PORT = process.env.PORT || 2208
-
-// Setup server
-var app = express();
-var server = require('http').createServer(app);
-
-var isDev = process.env.NODE_ENV === 'development';
-
-if(isDev){
-  app.use(express.static(path.join(__dirname,'..' ,'app')));
-}else{
-  app.use(express.static(path.join(__dirname,'..' ,'dist')));
-}
-
-// Start server
-server.listen(PORT, function() {
-  console.log('Express server listening on %d', PORT);
-});
-
-
-if (isDev) {
-  app.use(require('webpack-dev-middleware')(compiler, {
-    noInfo: false,
+if (IS_DEV) {
+  app.use(express.static(path.join(__dirname, '..', 'app')));
+  app.use(webpackDevMiddleware(compiler, {
     publicPath: webpackconfig.output.publicPath
   }));
-  
-  app.use(require('webpack-hot-middleware')(compiler));
+  app.use(webpackHotMiddleware(compiler));
+} else {
+  app.use(express.static(path.join(__dirname, '..', 'dist')));
 }
 
-// Expose app
-exports = module.exports = app;
+server.listen(PORT, function (error) {
+  if (error) {
+    console.log(error);
+  } else {
+    console.log('Server listening on port 2208');
+  }
+});
+
+io.on('connect', function (socket) {
+  socket.on('enter', function (playerName) {
+    players.push(new Player(socket.id, playerName));
+    feed.broadcast('players', players);
+    console.log('New player entered lobby, %s', playerName);
+  })
+  
+  socket.on('subscribe', () => {
+    console.log('players');
+    feed.broadcast('players', players);
+  })
+
+  socket.on('disconnect', function () {
+    players = players.filter((player) => { player.id = socket.id });
+  });
+});
