@@ -4,28 +4,46 @@ var express = require('express'),
   server = require('http').Server(app),
   io = require('socket.io')(server),
   path = require('path'),
-  webpack = require('webpack'),
-  webpackDevMiddleware = require('webpack-dev-middleware'),
-  webpackHotMiddleware = require('webpack-hot-middleware'),
-  webpackconfig = require('../webpack.config.js'),
-  compiler = webpack(webpackconfig),
   Tournement = require('./tournement.js'),
   Player = require('./player.js'),
-  feed = require('./feed.js')(io),
-  players = [];
+  api = require('./api.js')(io);
 
 const PORT = process.env.PORT || 2208,
   IS_DEV = process.env.NODE_ENV === 'development';
 
 if (IS_DEV) {
-  app.use(express.static(path.join(__dirname, '..', 'app')));
-  app.use(webpackDevMiddleware(compiler, {
-    publicPath: webpackconfig.output.publicPath
-  }));
-  app.use(webpackHotMiddleware(compiler));
+  webpackDevSetup(app);
 } else {
   app.use(express.static(path.join(__dirname, '..', 'dist')));
 }
+
+var players = [];
+io.on('connect', socket => {
+  socket.on('enter', playerName => {
+    players.push(new Player(socket, playerName));
+    api.broadcast('players', players);
+    console.log('New player entered lobby, %s', playerName);
+  })
+  
+  socket.on('update', () => {
+    console.log('client update');
+    socket.emit('players', players);
+  })
+
+  socket.on('start-tourney', (tourney) => {
+    var participants = players.filter(player => tourney.players.some(pl => {return pl.id === player.id}));
+    if(participants.length > 3) {
+      api.broadcast('Error', {name: tourney.name, message: 'A Tourney must consist of at least 4 players'})
+      new Tournement(tourney.name, participants, api).start();
+    }
+  })
+
+  socket.on('disconnect', () => {
+    players = players.filter((player) => { return player.id !== socket.id });
+    api.broadcast('players', players);    
+  });
+});
+
 
 server.listen(PORT, function (error) {
   if (error) {
@@ -35,19 +53,16 @@ server.listen(PORT, function (error) {
   }
 });
 
-io.on('connect', function (socket) {
-  socket.on('enter', function (playerName) {
-    players.push(new Player(socket.id, playerName));
-    feed.broadcast('players', players);
-    console.log('New player entered lobby, %s', playerName);
-  })
-  
-  socket.on('subscribe', () => {
-    console.log('players');
-    feed.broadcast('players', players);
-  })
 
-  socket.on('disconnect', function () {
-    players = players.filter((player) => { player.id = socket.id });
-  });
-});
+function webpackDevSetup(app) {
+  var webpack = require('webpack'),
+    webpackDevMiddleware = require('webpack-dev-middleware'),
+    webpackHotMiddleware = require('webpack-hot-middleware'),
+    webpackconfig = require('../webpack.config.js'),
+    compiler = webpack(webpackconfig);
+  app.use(express.static(path.join(__dirname, '..', 'app')));
+  app.use(webpackDevMiddleware(compiler, {
+    publicPath: webpackconfig.output.publicPath
+  }));
+  app.use(webpackHotMiddleware(compiler));
+}

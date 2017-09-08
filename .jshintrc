@@ -1,6 +1,5 @@
 {
   "node": true,
-  "esnext": true,
   "bitwise": true,
   "eqeqeq": true,
   "immed": true,
@@ -11,5 +10,6 @@
   "undef": true,
   "smarttabs": true,
   "asi": true,
-  "debug": true
+  "debug": true,
+  "esversion": 6
 }

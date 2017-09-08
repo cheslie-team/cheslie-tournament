@@ -1,13 +1,16 @@
 'use strict'
 
 var Player = class Player {
-    constructor(id, name, color) {
-        this.id = id;
+    constructor(socket, name) {
+        this.id = socket.id;
+        this.socket = socket;
         this.name = name;
-        this.color = 'w';
+    }
+    join(gameId){
+        this.socket.emit('join', gameId);
     }
     toJSON() {
-        { name: this.name }
+        return { id: this.id, name: this.name }
     }
 }
 

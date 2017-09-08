@@ -1,9 +1,10 @@
 
-var Feed = class Feed {
+var Api = class Api {
     constructor(io) {
         this.io =io;
         io.on('connect', (socket) => {
             socket.on('subscribe',  () => {
+                console.log('A client connected')
                 socket.join('subscribers');
             })
         });
@@ -13,6 +14,6 @@ var Feed = class Feed {
     }
 }
 
-module.exports = (io) => {return new Feed(io)};
+module.exports = (io) => {return new Api(io)};
 
 
