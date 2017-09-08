@@ -31,4 +31,8 @@ function onTourneyFinished(cb){
     tourney.on('tourney-finished', winner => cb(null, winner))
 }
 
-export { onPlayersUpdate, startTourney, onTourneyFinished};
+function onTourneyUpdate(cb){
+	tourney.on('tourney-update', tourney => cb(null, tourney))
+}
+
+export { onPlayersUpdate, startTourney, onTourneyFinished, onTourneyUpdate};

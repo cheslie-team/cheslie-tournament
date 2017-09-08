@@ -1,6 +1,7 @@
 var config = require("cheslie-config"),
   Duel = require("duel"),
   generate = require("project-name-generator"),
+  Mapper = require('./tournament-mapper'),
   gameServer = require("socket.io-client")(config.game.url);
 
 gameServer.on("connect", function () {
@@ -17,11 +18,12 @@ var Tournament = class Tournament {
       this.players = players.concat(players); //Dual støtter bare 4 eller flere spillere
     }
     this.tourney = new Duel(this.players.length, { short: true });
-    this.tourney.matches.map(game => { game.numberOfMatches = 0});
-
+    this.tourney.matches.map(game => { game.numberOfMatches = 0 });
+    this.mapper = new Mapper(this);
     if (!this.name || this.name.trim().length === 0) {
       this.name = generate().dashed;
     }
+    this.tourney.name = this.name;
   }
   start() {
     this.api.broadcast("tourney-started", {
@@ -32,7 +34,6 @@ var Tournament = class Tournament {
     this.updateTourneyOnGameEnds(this.tourney)
     this.playNextMatch();
   }
-
   updateTourneyOnGameEnds(tourney) {
     gameServer.on("ended", (gameState) => {
       var match = tourney.matches.find(match => { return match.gameId === gameState.id });
@@ -45,10 +46,9 @@ var Tournament = class Tournament {
       }
     });
   }
-  playerAt(seed){
-    return this.players[seed-1]
+  playerAt(seed) {
+    return this.players[seed - 1]
   }
-
   winner() {
     var winnerSeed = this.tourney.results()[0].seed;
     return this.playerAt(winnerSeed).name
@@ -63,7 +63,8 @@ var Tournament = class Tournament {
 
   updateGameWithResults(game, results) {
     var resultArray = results.result.split('-').map(str => parseInt(str));
-    return this.tourney.score(game.id, resultArray);
+    this.tourney.score(game.id, resultArray);
+    game.reason = results.reason;
   }
 
   playMatch(game) {
@@ -75,12 +76,15 @@ var Tournament = class Tournament {
   }
 
   playNextMatch() {
-    this.api.broadcast("tourney-update", this.tourney);
+    this.api.broadcast("tourney-update", this.clientTourney());
     if (this.tourney.isDone()) {
       return this.finished();
     }
     var game = this.tourney.matches.find(game => { return game.m === undefined });
     this.playMatch(game);
+  }
+  clientTourney() {
+    return this.mapper.toClient();
   }
 };
 
