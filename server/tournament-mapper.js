@@ -46,9 +46,9 @@ var TournamentMapper = class TournamentMapper {
     return {
       id: game.id.toString(),
       // the game name
-      name: 'Game state: ',
+      name: game.reason,
       // optional: the label for the game within the bracket, e.g. Gold Finals, Silver Semi-Finals
-      bracketLabel: game.reason,
+      bracketLabel: '',
       // the unix timestamp of the game-will be transformed to a human-readable time using momentjs
       scheduled: Date.now(),
       // where the game is played

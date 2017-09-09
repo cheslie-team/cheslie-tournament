@@ -1,5 +1,6 @@
 'use strict';
-var express = require('express'),
+var config = require("cheslie-config"),
+  express = require('express'),
   app = express(),
   server = require('http').Server(app),
   io = require('socket.io')(server),
@@ -9,7 +10,7 @@ var express = require('express'),
   tourney,
   api = require('./api.js')(io);
 
-const PORT = process.env.PORT || 2208,
+const PORT = process.env.PORT || config.tournament.port,
   IS_DEV = process.env.NODE_ENV === 'development';
 
 if (IS_DEV) {
@@ -23,26 +24,26 @@ io.on('connect', socket => {
   socket.on('enter', playerName => {
     players.push(new Player(socket, playerName));
     api.broadcast('players', players);
-    if(tourney) tourney.updateClient();
+    if (tourney) tourney.updateClient();
     console.log('New player entered lobby, %s', playerName);
   })
-  
+
   socket.on('update', () => {
     console.log('client update');
     socket.emit('players', players);
   })
 
   socket.on('start-tourney', (tourney) => {
-    var participants = players.filter(player => tourney.players.some(pl => {return pl.id === player.id}));
-    if(participants.length > 3) {
-      api.broadcast('Error', {name: tourney.name, message: 'A Tourney must consist of at least 4 players'})
+    var participants = players.filter(player => tourney.players.some(pl => { return pl.id === player.id }));
+    if (participants.length > 3) {
+      api.broadcast('Error', { name: tourney.name, message: 'A Tourney must consist of at least 4 players' })
       tourney = new Tournement(tourney.name, participants, api).start();
     }
   })
 
   socket.on('disconnect', () => {
     players = players.filter((player) => { return player.id !== socket.id });
-    api.broadcast('players', players);    
+    api.broadcast('players', players);
   });
 });
 

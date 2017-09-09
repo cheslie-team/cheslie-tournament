@@ -74,8 +74,12 @@ var Tournament = class Tournament {
 
   updateGameWithResults(game, results) {
     var resultArray = results.result.split('-').map(str => parseInt(str));
-    this.tourney.score(game.id, resultArray);
+    var isFinished = this.tourney.score(game.id, resultArray);
     game.reason = results.reason;
+    if(!isFinished){
+      this.tourney.score(game.id, [game.valueWhitePieces,game.valueBlackPieces]);
+      game.reason = 'Won by points'
+    }
   }
 
   playMatch(game) {
