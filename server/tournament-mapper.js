@@ -16,7 +16,7 @@ var TournamentMapper = class TournamentMapper {
     if (!isHome) sourceGameId.m++;
     var sourceGame = this.tourney.findMatch(sourceGameId);
     var playerName = ((player) => { return player ? player.name : '' })(this.tournament.playerAt(match.p[isHome]))
-    var playerScore = match.m ? match.m[isHome]: 0;
+    var playerScore = match.m ? match.m[isHome] : 0;
     return {
       score:
       {
@@ -37,8 +37,14 @@ var TournamentMapper = class TournamentMapper {
   }
 
   toClient() {
-    var matches = this.tourney.matches
-    return this.mapToClientGame(matches[matches.length - 1])
+    var matches = this.tourney.matches,
+      rootMatch = matches[matches.length - 1],
+      currentMatch = this.tourney.matches.find(game => { return game.m === undefined });
+    currentMatch = currentMatch || rootMatch;
+    return {
+      rootGame: this.mapToClientGame(rootMatch),
+      currentMatchId: currentMatch.gameId
+    }
   }
 
   mapToClientGame(game) {

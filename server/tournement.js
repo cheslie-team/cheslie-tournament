@@ -3,12 +3,7 @@ var config = require("cheslie-config"),
   hash = require('hash.js'),
   generate = require("project-name-generator"),
   Mapper = require('./tournament-mapper'),
-  gameServer = require("socket.io-client")(config.game.url);
-
-gameServer.on("connect", function () {
-  console.log("Conntected to game");
-  gameServer.emit("subscribe");
-});
+  socketIO = require("socket.io-client");
 
 var Tournament = class Tournament {
   constructor(name, players, api) {
@@ -26,6 +21,15 @@ var Tournament = class Tournament {
     }
     this.tourney.name = this.name;
     this.currentlyPlayingMatch = undefined;
+    this.initGameServer();
+  }
+
+  initGameServer() {
+    this.gameServer = socketIO(config.game.url);
+    this.gameServer.on("connect", function (socket) {
+      console.log("Conntected to game");
+      this.emit("subscribe");
+    });
   }
   start() {
     this.api.broadcast("tourney-started", {
@@ -38,7 +42,7 @@ var Tournament = class Tournament {
     this.playNextMatch();
   }
   streamCurrentlyPlayingMatch() {
-    gameServer.on('move', game => {
+    this.gameServer.on('move', game => {
       if (!this.currentlyPlayingMatch) return;
       if (game.gameId !== this.currentlyPlayingMatch.gameId) return;
 
@@ -46,7 +50,7 @@ var Tournament = class Tournament {
     })
   }
   updateTourneyOnGameEnds(tourney) {
-    gameServer.on("ended", (gameState) => {
+    this.gameServer.on("ended", (gameState) => {
       if (!this.tourney) return;
 
       var match = tourney.matches.find(match => { return match.gameId === gameState.id });
@@ -74,7 +78,6 @@ var Tournament = class Tournament {
     });
     console.log(this.winner(), "is the winner of ", this.name);
   }
-
   updateGameWithResults(game, results) {
     var resultArray = results.result.split('-').map(str => parseInt(str));
     var isFinished = this.tourney.score(game.id, resultArray);
@@ -85,7 +88,6 @@ var Tournament = class Tournament {
     }
     this.updateClient();
   }
-
   playMatch(game) {
     game.numberOfMatches++;
     game.state = 'In progress (' + game.numberOfMatches + ')';
@@ -97,13 +99,11 @@ var Tournament = class Tournament {
     black.join(game.gameId);
     white.join(game.gameId);
   }
-
   createGameId(game) {
     var names = game.white.name + game.black.name;
     var gameId = hash.sha256().update(names).digest('hex');
-    return gameId + game.id.s + game.id.r + game.id.m
+    return gameId + game.id.s + game.id.r + game.id.m + Date.now()
   }
-
   playNextMatch() {
     if (this.tourney.isDone()) {
       return this.finished();
@@ -111,7 +111,6 @@ var Tournament = class Tournament {
     var game = this.tourney.matches.find(game => { return game.m === undefined });
     this.playMatch(game);
     this.updateClient();
-
   }
   clientTourney() {
     return this.mapper.toClient();
@@ -119,12 +118,8 @@ var Tournament = class Tournament {
   updateClient() {
     this.api.broadcast("tourney-update", this.clientTourney());
   }
-
   stop() {
-    this.tourney = this.players = this.api = this.currentlyPlayingMatch = undefined;
-    for (const prop of Object.keys(this)) {
-      delete this[prop];
-    }
+    this.gameServer.disconnect();
   }
 };
 

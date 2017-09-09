@@ -10,12 +10,21 @@ var App = class App extends Component {
         this.state = {
             players: [],
             winner: '',
+            currentMatchId: undefined,
             currentlyPlayingMatch: undefined
         };
-        onPlayersUpdate((err, updatedPlayers) => { this.setState({ players: updatedPlayers }) });
-        onTourneyFinished((err, result) => { this.setState({ winner: result.winner }) });
-        onTourneyUpdate((err, tourney) => { this.setState({ tourney: tourney }) });
-        onCurrentlPlayingMatchUpdate((err, match) => { this.setState({ currentlyPlayingMatch: match }) });
+        onPlayersUpdate((err, updatedPlayers) => {
+            this.setState({ players: updatedPlayers })
+        });
+        onTourneyFinished((err, result) => {
+            this.setState({ winner: result.winner })
+        });
+        onTourneyUpdate((err, tourney) => {
+            this.setState({ tourney: tourney.rootGame, currentMatchId: tourney.currentMatchId })
+        });
+        onCurrentlPlayingMatchUpdate((err, move) => {
+            if (move.gameId === this.state.currentMatchId) { this.setState({ currentlyPlayingMatch: move }) }
+        });
         this.onStartTourneyClick = this.onStartTourneyClick.bind(this);
     }
 
@@ -60,7 +69,7 @@ var App = class App extends Component {
                     </Button>
                     </ul>
                     {this.state.tourney ?
-                        <Bracket game={this.state.tourney} homeOnTop={true} gameDimensions={{height: 80,width: 200 }}/> : ''
+                        <Bracket game={this.state.tourney} homeOnTop={true} gameDimensions={{ height: 80, width: 200 }} /> : ''
                     }
                     <h4>The winner is: {this.state.winner}</h4>
                 </div>

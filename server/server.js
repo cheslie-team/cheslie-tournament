@@ -7,7 +7,7 @@ var config = require("cheslie-config"),
   path = require('path'),
   Tournement = require('./tournement.js'),
   Player = require('./player.js'),
-  tourney,
+  globalTourney,
   api = require('./api.js')(io);
 
 const PORT = process.env.PORT || config.tournament.port,
@@ -26,19 +26,19 @@ io.on('connect', socket => {
     api.broadcast('players', players);
     console.log('New player entered lobby, %s', playerName);
   })
-  
+
   socket.on('update', () => {
     console.log('client update');
     socket.emit('players', players);
-    if (tourney) tourney.updateClient();
+    if (globalTourney) globalTourney.updateClient();
   })
 
   socket.on('start-tourney', (tourney) => {
     var participants = players.filter(player => tourney.players.some(pl => { return pl.id === player.id }));
     if (participants.length > 3) {
       api.broadcast('Error', { name: tourney.name, message: 'A Tourney must consist of at least 4 players' })
-      if (!tourney) tourney.stop();
-      tourney = new Tournement(tourney.name, participants, api).start();
+      if (globalTourney) globalTourney.stop();
+      globalTourney = new Tournement(tourney.name, participants, api).start();
     }
   })
 
