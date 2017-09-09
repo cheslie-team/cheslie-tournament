@@ -24,6 +24,7 @@ var Tournament = class Tournament {
       this.name = generate().dashed;
     }
     this.tourney.name = this.name;
+    this.currentlyPlayingMatch = undefined;
   }
   start() {
     this.api.broadcast("tourney-started", {
@@ -32,12 +33,22 @@ var Tournament = class Tournament {
     });
     console.log(this.name, ": Tourney started");
     this.updateTourneyOnGameEnds(this.tourney)
+    this.streamCurrentlyPlayingMatch()
     this.playNextMatch();
+  }
+  streamCurrentlyPlayingMatch() {
+    gameServer.on('move', game => {
+      if (!this.currentlyPlayingMatch) return;
+      if (game.gameId !== this.currentlyPlayingMatch.gameId) return;
+
+      this.api.broadcast('currently-playing-match', game)
+    })
   }
   updateTourneyOnGameEnds(tourney) {
     gameServer.on("ended", (gameState) => {
       var match = tourney.matches.find(match => { return match.gameId === gameState.id });
       if (match) {
+        this.currentlyPlayingMatch = undefined;
         this.updateGameWithResults(match, gameState)
         this.playNextMatch();
       }
@@ -70,13 +81,14 @@ var Tournament = class Tournament {
   playMatch(game) {
     game.numberOfMatches++;
     game.gameId = this.name + game.id.s + game.id.r + game.id.m + ":" + game.numberOfMatches;
+    this.currentlyPlayingMatch = game;
     console.log("Starting game: ", game.gameId, " for the ", game.numberOfMatches, " time");
     this.players[game.p[0] - 1].join(game.gameId);
     this.players[game.p[1] - 1].join(game.gameId);
   }
 
   playNextMatch() {
-    this.api.broadcast("tourney-update", this.clientTourney());
+    this.updateClient();
     if (this.tourney.isDone()) {
       return this.finished();
     }
@@ -85,6 +97,9 @@ var Tournament = class Tournament {
   }
   clientTourney() {
     return this.mapper.toClient();
+  }
+  updateClient() {
+    this.api.broadcast("tourney-update", this.clientTourney());
   }
 };
 

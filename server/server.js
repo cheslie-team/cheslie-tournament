@@ -6,6 +6,7 @@ var express = require('express'),
   path = require('path'),
   Tournement = require('./tournement.js'),
   Player = require('./player.js'),
+  tourney,
   api = require('./api.js')(io);
 
 const PORT = process.env.PORT || 2208,
@@ -22,6 +23,7 @@ io.on('connect', socket => {
   socket.on('enter', playerName => {
     players.push(new Player(socket, playerName));
     api.broadcast('players', players);
+    if(tourney) tourney.updateClient();
     console.log('New player entered lobby, %s', playerName);
   })
   
@@ -34,7 +36,7 @@ io.on('connect', socket => {
     var participants = players.filter(player => tourney.players.some(pl => {return pl.id === player.id}));
     if(participants.length > 3) {
       api.broadcast('Error', {name: tourney.name, message: 'A Tourney must consist of at least 4 players'})
-      new Tournement(tourney.name, participants, api).start();
+      tourney = new Tournement(tourney.name, participants, api).start();
     }
   })
 
@@ -52,7 +54,6 @@ server.listen(PORT, function (error) {
     console.log('Server listening on port 2208');
   }
 });
-
 
 function webpackDevSetup(app) {
   var webpack = require('webpack'),

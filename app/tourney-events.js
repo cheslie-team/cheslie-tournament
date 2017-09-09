@@ -19,6 +19,10 @@ tourney.on('tourney-update', function (data) {
 	console.log('tourney-update: ', data);
 });
 
+tourney.on('currently-playing-match', function (data) {
+	console.log('currently-playing-match: ', data);
+});
+
 function onPlayersUpdate(cb) {
     tourney.on('players', players => cb(null, players));
     tourney.emit('update');
@@ -31,8 +35,12 @@ function onTourneyFinished(cb){
     tourney.on('tourney-finished', winner => cb(null, winner))
 }
 
+function onCurrentlPlayingMatchUpdate(cb){
+	tourney.on('currently-playing-match', match => cb(null, match))
+}
+
 function onTourneyUpdate(cb){
 	tourney.on('tourney-update', tourney => cb(null, tourney))
 }
 
-export { onPlayersUpdate, startTourney, onTourneyFinished, onTourneyUpdate};
+export { onPlayersUpdate, startTourney, onTourneyFinished, onTourneyUpdate, onCurrentlPlayingMatchUpdate};
