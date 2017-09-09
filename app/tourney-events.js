@@ -1,5 +1,5 @@
 import openSocket from 'socket.io-client';
-const tourney = openSocket('http://localhost:2208');
+const tourney = openSocket();
 
 tourney.on('connect', function () {
 	console.log('Conntected to tourney-server');
