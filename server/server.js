@@ -24,19 +24,20 @@ io.on('connect', socket => {
   socket.on('enter', playerName => {
     players.push(new Player(socket, playerName));
     api.broadcast('players', players);
-    if (tourney) tourney.updateClient();
     console.log('New player entered lobby, %s', playerName);
   })
-
+  
   socket.on('update', () => {
     console.log('client update');
     socket.emit('players', players);
+    if (tourney) tourney.updateClient();
   })
 
   socket.on('start-tourney', (tourney) => {
     var participants = players.filter(player => tourney.players.some(pl => { return pl.id === player.id }));
     if (participants.length > 3) {
       api.broadcast('Error', { name: tourney.name, message: 'A Tourney must consist of at least 4 players' })
+      if (!tourney) tourney.stop();
       tourney = new Tournement(tourney.name, participants, api).start();
     }
   })

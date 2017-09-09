@@ -31,7 +31,14 @@ var App = class App extends Component {
     currentMatchOpponents() {
         var match = this.state.currentlyPlayingMatch;
         if (!match) return '';
-        return match.white + ' VS ' + match.black;
+        return match.white + '  (' + match.valueWhitePieces
+            + ')    VS   '
+            + match.black + '  (' + match.valueBlackPieces + ')';
+    }
+    currentScore() {
+        var match = this.state.currentlyPlayingMatch;
+        if (!match) return 0;
+        return parseInt(match.valueWhitePieces) - parseInt(match.valueBlackPieces)
     }
     currentMatchFen() {
         var match = this.state.currentlyPlayingMatch;
@@ -53,12 +60,13 @@ var App = class App extends Component {
                     </Button>
                     </ul>
                     {this.state.tourney ?
-                        <Bracket game={this.state.tourney} homeOnTop={true} /> : ''
+                        <Bracket game={this.state.tourney} homeOnTop={true} gameDimensions={{height: 80,width: 200 }}/> : ''
                     }
                     <h4>The winner is: {this.state.winner}</h4>
                 </div>
                 <h2>Currently playing</h2>
                 <h4>{this.currentMatchOpponents()}</h4>
+                <h4>Score: {this.currentScore()}</h4>
                 <div><ChessBoard fen={this.currentMatchFen()} /></div>
             </div>
         );
