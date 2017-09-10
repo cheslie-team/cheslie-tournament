@@ -23,14 +23,14 @@ var TournamentMapper = class TournamentMapper {
         score: playerScore
       },
       seed: {
-        displayName: 'Seed' + isHome,
+        displayName: playerName,
         rank: 1,
         sourceGame: this.mapToClientGame(sourceGame),
         sourcePool: null,
       },
       team:
       {
-        id: match.p[isHome] + '',
+        id: match.gameId || '',
         name: playerName
       },
     }
@@ -49,11 +49,11 @@ var TournamentMapper = class TournamentMapper {
 
   mapToClientGame(game) {
     if (!game) return null;
-    var gameState = game.state;
+    var gameState = game.state || '';
     return {
       id: game.id.toString(),
       // the game name
-      name: 'State',
+      name: gameState == '' ? '' :'State',
       // optional: the label for the game within the bracket, e.g. Gold Finals, Silver Semi-Finals
       bracketLabel: gameState,
       // the unix timestamp of the game-will be transformed to a human-readable time using momentjs

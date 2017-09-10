@@ -1,7 +1,8 @@
 import React, { Component, PropTypes } from 'react';
 import { onPlayersUpdate, startTourney, onTourneyFinished, onTourneyUpdate, onCurrentlPlayingMatchUpdate } from './tourney-events';
 import ChessBoard from './chess-board';
-import { Bracket, BracketGenerator } from 'react-tournament-bracket';
+import PlayerList from './player-list';
+import { Bracket, BracketGame } from 'react-tournament-bracket';
 import { Button } from 'semantic-ui-react';
 
 var App = class App extends Component {
@@ -54,22 +55,44 @@ var App = class App extends Component {
         if (!match) return ''
         return match.board;
     }
+
+
+    gameComponent(props) {
+        var changeHoveredTeamId = hoveredTeamId => {this.setState({ hoveredTeamId });
+    console.log('Hover: ', hoveredTeamId)},
+            handleClick = game => alert('clicked game: ' + game.name);
+
+        const myStyles = {
+            backgroundColor: '#58595e',
+            hoverBackgroundColor: '#222',
+            scoreBackground: '#787a80',
+            winningScoreBackground: '#ff7324',
+            teamNameStyle: { fill: '#fff', fontSize: 12, textShadow: '1px 1px 1px #222' },
+            teamScoreStyle: { fill: '#23252d', fontSize: 12 },
+            gameNameStyle: { fill: '#999', fontSize: 10 },
+            gameTimeStyle: { fill: '#999', fontSize: 10 },
+            teamSeparatorStyle: { stroke: '#444549', strokeWidth: 1 }
+        };
+        return <BracketGame {...props} 
+        topText={props => { return '' }} 
+        styles={myStyles}
+        onHoveredTeamIdChange={changeHoveredTeamId}
+        onClick={() => handleClick(props.game)}
+        hoveredTeamId={this.state.hoveredTeamId} />
+    }
     render() {
+        const gameComponent = props => this.gameComponent(props);
         return (
             <div>
                 <div >
-                    {this.state.players.length}
+                    {this.state.hoveredTeamId}
                     <h1>Players</h1>
-                    <ul>
-                        {this.state.players.map(function (player, i) {
-                            return <li key={i}>{player.name}</li>
-                        })}
+                    <PlayerList players={this.state.players}/>
                         <Button onClick={this.onStartTourneyClick}>
                             Start tourney
                     </Button>
-                    </ul>
                     {this.state.tourney ?
-                        <Bracket game={this.state.tourney} homeOnTop={true} gameDimensions={{ height: 80, width: 200 }} /> : ''
+                        <Bracket game={this.state.tourney} GameComponent={gameComponent} homeOnTop={true} gameDimensions={{ height: 80, width: 200 }} /> : ''
                     }
                     <h4>The winner is: {this.state.winner}</h4>
                 </div>

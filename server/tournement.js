@@ -3,33 +3,39 @@ var config = require("cheslie-config"),
   hash = require('hash.js'),
   generate = require("project-name-generator"),
   Mapper = require('./tournament-mapper'),
-  socketIO = require("socket.io-client");
+  _ = require('underscore'),
+  socketIO = require("socket.io-client"),
+  gameServer = socketIO(config.game.url);
+
+gameServer.on("connect", function (socket) {
+  console.log("Conntected to game");
+  this.emit("subscribe");
+});
 
 var Tournament = class Tournament {
   constructor(name, players, api) {
     this.api = api;
     this.name = name;
-    this.players = players;
+    this.players = _.shuffle(players);
     if (players.length < 4) {
       this.players = players.concat(players); //Dual støtter bare 4 eller flere spillere
     }
     this.tourney = new Duel(this.players.length, { short: true });
-    this.tourney.matches.map(game => { game.numberOfMatches = 0; game.state = 'To be played' });
     this.mapper = new Mapper(this);
     if (!this.name || this.name.trim().length === 0) {
       this.name = generate().dashed;
     }
     this.tourney.name = this.name;
     this.currentlyPlayingMatch = undefined;
-    this.initGameServer();
+    this.initMatches();
   }
-
-  initGameServer() {
-    this.gameServer = socketIO(config.game.url);
-    this.gameServer.on("connect", function (socket) {
-      console.log("Conntected to game");
-      this.emit("subscribe");
-    });
+  initMatches() {
+    this.tourney.matches
+      .map(game => {
+        var isWalkover = (game.p[0] === -1 || game.p[1] === -1);
+        game.numberOfMatches = 0;
+        game.state = isWalkover ? '' : 'To be played'
+      });
   }
   start() {
     this.api.broadcast("tourney-started", {
@@ -42,7 +48,7 @@ var Tournament = class Tournament {
     this.playNextMatch();
   }
   streamCurrentlyPlayingMatch() {
-    this.gameServer.on('move', game => {
+    gameServer.on('move', game => {
       if (!this.currentlyPlayingMatch) return;
       if (game.gameId !== this.currentlyPlayingMatch.gameId) return;
 
@@ -50,7 +56,7 @@ var Tournament = class Tournament {
     })
   }
   updateTourneyOnGameEnds(tourney) {
-    this.gameServer.on("ended", (gameState) => {
+    gameServer.on("ended", (gameState) => {
       if (!this.tourney) return;
 
       var match = tourney.matches.find(match => { return match.gameId === gameState.id });
@@ -119,7 +125,6 @@ var Tournament = class Tournament {
     this.api.broadcast("tourney-update", this.clientTourney());
   }
   stop() {
-    this.gameServer.disconnect();
   }
 };
 
