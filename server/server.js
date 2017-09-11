@@ -68,6 +68,9 @@ io.on('connect', socket => {
   socket.on('disconnect', () => {
     players = players.filter((player) => { return player.id !== socket.id });
     api.broadcast('players', players);
+    if (this.tourney) {
+      this.tourney.removePlayerWithId(socket.id);
+    }
   });
 });
 

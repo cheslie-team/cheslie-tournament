@@ -31,8 +31,12 @@ var Tournament = class Tournament {
   removePlayer(player) {
     if (!player) return;
     if (!this.isPlayerInTouney(player)) return;
-    this.players = this.players.filter(exPlayer => { return exPlayer.id !== player.id });
     player.inTouney = '';
+    this.removePlayerWithId(player.id)
+  }
+  removePlayerWithId(playerId) {
+    if (!playerId) return
+    this.players = this.players.filter(exPlayer => { return exPlayer.id !== playerId });
     this.createOrUpdateTurney();
   }
   isPlayerInTouney(player) {
@@ -125,7 +129,7 @@ var Tournament = class Tournament {
       } else {
         resultArray = _.shuffle([1, 0]);
         this.tourney.score(game.id, resultArray);
-        game.reason = game.state = 'Won by coin';          ;
+        game.reason = game.state = 'Won by coin';;
       }
     }
     this.updateClient();
