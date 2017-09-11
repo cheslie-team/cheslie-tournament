@@ -21,10 +21,27 @@ if (IS_DEV) {
 var players = [],
   globalTourney;
 io.on('connect', socket => {
+  if (!globalTourney) globalTourney = new Tournement([], api);
   socket.on('enter', playerName => {
     players.push(new Player(socket, playerName));
     api.broadcast('players', players);
     console.log('New player entered lobby, %s', playerName);
+  })
+
+  socket.on('add-player', (clientPlayer) => {
+    if (!globalTourney) return;
+    if (globalTourney.started) return;
+    var player = Player.fromClient(clientPlayer, players);
+    globalTourney.addPlayer(player)
+    api.broadcast('players', players);
+  })
+
+  socket.on('remove-player', (clientPlayer) => {
+    if (!globalTourney) return;
+    if (globalTourney.started) return;
+    var player = Player.fromClient(clientPlayer, players);
+    globalTourney.removePlayer(player)
+    api.broadcast('players', players);
   })
 
   socket.on('update', () => {
@@ -33,15 +50,19 @@ io.on('connect', socket => {
     if (globalTourney) globalTourney.updateClient();
   })
 
+  socket.on('reset-tourney', () => {
+    if (globalTourney) globalTourney.stop();
+    players.map(player => { player.reset() })
+    globalTourney = new Tournement([], api);
+    api.broadcast('players', players);
+
+  })
+
   socket.on('start-tourney', (tourney) => {
-    var participants = players.filter(player => tourney.players.some(pl => { return pl.id === player.id }));
-    if (participants.length > 3) {
-      api.broadcast('Error', { name: tourney.name, message: 'A Tourney must consist of at least 4 players' })
-      if (globalTourney)
-        globalTourney.stop();
-      globalTourney = new Tournement(tourney.name, participants, api);
-      globalTourney.start();
-    }
+    if (!globalTourney) return;
+    if (!globalTourney.isReadyToStart()) return;
+
+    globalTourney.start();
   })
 
   socket.on('disconnect', () => {

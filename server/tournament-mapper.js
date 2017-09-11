@@ -14,6 +14,7 @@ var TournamentMapper = class TournamentMapper {
     }
     sourceGameId.m = (2 * (sourceGameId.m - 1)) + 1;
     if (!isHome) sourceGameId.m++;
+    var touneyGameId = match.id.s + match.id.e + match.id.m;
     var sourceGame = this.tourney.findMatch(sourceGameId);
     var playerName = ((player) => { return player ? player.name : '' })(this.tournament.playerAt(match.p[isHome]))
     var playerScore = match.m ? match.m[isHome] : 0;
@@ -23,14 +24,14 @@ var TournamentMapper = class TournamentMapper {
         score: playerScore
       },
       seed: {
-        displayName: playerName,
+        displayName: isHome ? 'White' :'Black',
         rank: 1,
         sourceGame: this.mapToClientGame(sourceGame),
         sourcePool: null,
       },
       team:
       {
-        id: match.gameId || '',
+        id: (playerName === '') ? touneyGameId : playerName,
         name: playerName
       },
     }
@@ -43,7 +44,8 @@ var TournamentMapper = class TournamentMapper {
     currentMatch = currentMatch || rootMatch;
     return {
       rootGame: this.mapToClientGame(rootMatch),
-      currentMatchId: currentMatch.gameId
+      currentMatchId: currentMatch.gameId,
+      isReadyToStart: this.tournament.isReadyToStart()
     }
   }
 
@@ -53,7 +55,7 @@ var TournamentMapper = class TournamentMapper {
     return {
       id: game.id.toString(),
       // the game name
-      name: gameState == '' ? '' :'State',
+      name: gameState == '' ? '' : 'State',
       // optional: the label for the game within the bracket, e.g. Gold Finals, Silver Semi-Finals
       bracketLabel: gameState,
       // the unix timestamp of the game-will be transformed to a human-readable time using momentjs

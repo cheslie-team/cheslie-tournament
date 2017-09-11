@@ -19,28 +19,43 @@ tourney.on('tourney-update', function (data) {
 	console.log('tourney-update: ', data);
 });
 
-tourney.on('currently-playing-match', function (data) {
-	console.log('currently-playing-match: ', data);
+tourney.on('match-update', function (data) {
+	console.log('match-update: ', data);
+});
+
+tourney.on('players', function (data) {
+	console.log('players: ', data);
 });
 
 function onPlayersUpdate(cb) {
-    tourney.on('players', players => cb(null, players));
-    tourney.emit('update');
-}
-function startTourney(name, players) {
-    tourney.emit('start-tourney', {name, players});
+	tourney.on('players', players => cb(null, players));
 }
 
-function onTourneyFinished(cb){
-    tourney.on('tourney-finished', winner => cb(null, winner))
+function onTourneyFinished(cb) {
+	tourney.on('tourney-finished', winner => cb(null, winner))
 }
 
-function onCurrentlPlayingMatchUpdate(cb){
-	tourney.on('currently-playing-match', match => cb(null, match))
+function onMatchUpdate(cb) {
+	tourney.on('match-update', match => cb(null, match))
 }
 
-function onTourneyUpdate(cb){
+function onTourneyUpdate(cb) {
 	tourney.on('tourney-update', tourney => cb(null, tourney))
 }
 
-export { onPlayersUpdate, startTourney, onTourneyFinished, onTourneyUpdate, onCurrentlPlayingMatchUpdate};
+function startTourney(players) {
+	tourney.emit('start-tourney', { players });
+}
+function addPlayerToTourney(player) {
+	tourney.emit('add-player', player);
+}
+
+function removePlayerToTourney(player) {
+	tourney.emit('remove-player', player);
+}
+
+function resetTourney() {
+	tourney.emit('reset-tourney', {} );
+}
+
+export { onPlayersUpdate, startTourney, onTourneyFinished, onTourneyUpdate, onMatchUpdate, addPlayerToTourney, removePlayerToTourney, resetTourney };

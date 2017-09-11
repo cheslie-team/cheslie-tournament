@@ -13,36 +13,61 @@ gameServer.on("connect", function (socket) {
 });
 
 var Tournament = class Tournament {
-  constructor(name, players, api) {
+  constructor(players, api) {
     this.api = api;
-    this.name = name;
-    this.players = _.shuffle(players);
-    if (players.length < 4) {
-      this.players = players.concat(players); //Dual støtter bare 4 eller flere spillere
-    }
-    this.tourney = new Duel(this.players.length, { short: true });
-    this.mapper = new Mapper(this);
-    if (!this.name || this.name.trim().length === 0) {
-      this.name = generate().dashed;
-    }
+    this.players = players || [];
+    this.started = false;
+    this.name = generate().dashed;
+    this.createOrUpdateTurney();
+    players.map(this.addPlayer);
+  }
+  addPlayer(player) {
+    if (!player) return;
+    if (this.isPlayerInTouney(player)) return;
+    this.players.push(player);
+    player.inTouney = this.name;
+    this.createOrUpdateTurney();
+  }
+  removePlayer(player) {
+    if (!player) return;
+    if (!this.isPlayerInTouney(player)) return;
+    this.players = this.players.filter(exPlayer => { return exPlayer.id !== player.id });
+    player.inTouney = '';
+    this.createOrUpdateTurney();
+  }
+  isPlayerInTouney(player) {
+    if (!Array.isArray(this.players)) return false;
+    return this.players.some((exPlayer) => { return exPlayer.id === player.id });
+  }
+  createOrUpdateTurney() {
+    if (this.started && !this.finished()) return;
+    var size = (this.players.length > 3) ? this.players.length : 4;
+    this.tourney = new Duel(size, { short: true });
     this.tourney.name = this.name;
-    this.currentlyPlayingMatch = undefined;
+    this.players.map(player => player.inTouney = this.name)
     this.initMatches();
+    this.updateClient();
   }
   initMatches() {
     this.tourney.matches
       .map(game => {
-        var isWalkover = (game.p[0] === -1 || game.p[1] === -1);
         game.numberOfMatches = 0;
-        game.state = isWalkover ? '' : 'To be played'
+        var isWalkover = (game.p[0] === -1 || game.p[1] === -1);
+        var tooFewPlayers = this.players.length < 4;
+        game.state = isWalkover ? '' : 'To be played';
+        if (tooFewPlayers) game.state = 'Too few players';
       });
   }
+  isReadyToStart() {
+    return !this.started &&
+      !this.isFinished() &&
+      this.players.length > 3 &&
+      this.players.length === this.tourney.numPlayers
+  }
   start() {
-    this.api.broadcast("tourney-started", {
-      name: this.name,
-      players: this.players
-    });
-    console.log(this.name, ": Tourney started");
+    if (this.started) return this.updateClient();
+    this.started = true;
+    this.api.tourneyStarted(this);
     this.updateTourneyOnGameEnds(this.tourney)
     this.streamCurrentlyPlayingMatch()
     this.playNextMatch();
@@ -52,7 +77,7 @@ var Tournament = class Tournament {
       if (!this.currentlyPlayingMatch) return;
       if (game.gameId !== this.currentlyPlayingMatch.gameId) return;
 
-      this.api.broadcast('currently-playing-match', game)
+      this.api.broadcast('match-update', game)
     })
   }
   updateTourneyOnGameEnds(tourney) {
@@ -76,6 +101,9 @@ var Tournament = class Tournament {
   winner() {
     var winnerSeed = this.tourney.results()[0].seed;
     return this.playerAt(winnerSeed).name
+  }
+  isFinished() {
+    return this.tourney && this.tourney.isDone() && this.started
   }
   finished() {
     this.api.broadcast("tourney-finished", {
@@ -111,20 +139,25 @@ var Tournament = class Tournament {
     return gameId + game.id.s + game.id.r + game.id.m + Date.now()
   }
   playNextMatch() {
-    if (this.tourney.isDone()) {
-      return this.finished();
-    }
+    if (this.isFinished() || this.tourney.isDone()) return this.finished();
     var game = this.tourney.matches.find(game => { return game.m === undefined });
-    this.playMatch(game);
+    if (game)
+      this.playMatch(game);
     this.updateClient();
   }
   clientTourney() {
-    return this.mapper.toClient();
+    return (new Mapper(this)).toClient();
   }
   updateClient() {
     this.api.broadcast("tourney-update", this.clientTourney());
   }
   stop() {
+    this.started = false;
+    this.players.map(player => player.inTouney = '');
+    this.tourney = undefined;
+    gameServer.removeAllListeners('move');
+    gameServer.removeAllListeners('ended');
+    this.createOrUpdateTurney();
   }
 };
 

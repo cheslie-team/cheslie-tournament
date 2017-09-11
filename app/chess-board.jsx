@@ -38,7 +38,7 @@ class ReactChessBoard extends Component {
 
     render(props) {
         return (
-            <div id={'board'} style={{ width: '400px' }}>
+            <div id={'board'} >
                 ChessBoard</div>
         );
     }
