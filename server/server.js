@@ -32,7 +32,6 @@ io.on('connect', socket => {
 
   socket.on('add-player', (clientPlayer) => {
     if (!globalTourney) return;
-    if (globalTourney.started) return;
     var player = Player.fromClient(clientPlayer, players);
     globalTourney.addPlayer(player)
     api.broadcast('players', players);
@@ -57,7 +56,6 @@ io.on('connect', socket => {
     players.map(player => { player.reset() })
     globalTourney = new Tournement([], api);
     api.broadcast('players', players);
-
   })
 
   socket.on('start-tourney', (tourney) => {
@@ -72,7 +70,6 @@ io.on('connect', socket => {
     api.broadcast('players', players);
   });
 });
-
 
 server.listen(PORT, function (error) {
   if (error) {

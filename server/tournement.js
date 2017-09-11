@@ -28,6 +28,7 @@ var Tournament = class Tournament {
   addPlayer(player) {
     if (!player) return;
     if (this.isPlayerInTouney(player)) return;
+    if (this.started) return;
     this.players.push(player);
     player.inTouney = this.name;
     this.createOrUpdateTurney();
@@ -35,6 +36,7 @@ var Tournament = class Tournament {
   removePlayer(player) {
     if (!player) return;
     if (!this.isPlayerInTouney(player)) return;
+    if (this.started) return;
     this.players = this.players.filter(exPlayer => { return exPlayer.id !== player.id });
     player.inTouney = '';
     this.createOrUpdateTurney();
@@ -63,10 +65,12 @@ var Tournament = class Tournament {
       });
   }
   isReadyToStart() {
+    this.reconnectGameServer();
     return !this.started &&
       !this.isFinished() &&
       this.players.length > 3 &&
-      this.players.length === this.tourney.numPlayers
+      this.players.length === this.tourney.numPlayers &&
+      gameServer.connected;
   }
   start() {
     if (this.started) return this.updateClient();

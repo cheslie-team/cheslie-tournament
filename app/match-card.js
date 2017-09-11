@@ -21,8 +21,8 @@ var MatchCard = class MatchCard extends Component {
         <Image avatar src='/vendor/chessboardjs0.3.0/img/chesspieces/wikipedia/bK.png' />
         <span style={{ fontWeight: 'bold' }}>{match.black}</span>
       </Grid.Column>
-      <Grid.Column floated='right' width={4}>
-        <span >Score: {match.valueBlackPieces}</span>
+      <Grid.Column floated='right' textAlign='right' width={4}>
+        <span >Score: {match.valueBlackPieces}</span><span>  </span>
       </Grid.Column>
     </Grid>)
   }
@@ -35,17 +35,17 @@ var MatchCard = class MatchCard extends Component {
           <Image avatar src='/vendor/chessboardjs0.3.0/img/chesspieces/wikipedia/wK.png' />
           <span style={{ fontWeight: 'bold' }}>{match.white}</span>
         </Grid.Column>
-        <Grid.Column floated='right' width={4}>
-          <span >Score: {match.valueWhitePieces}</span>
+        <Grid.Column floated='right' textAlign='right' width={4}>
+          <span >Score: {match.valueWhitePieces}</span> <span>  </span>
         </Grid.Column>
       </Grid>)
   }
   render() {
-    
+
     return (
       <Container>
         {this.blackplayer()}
-        <ChessBoard id={this.state.matchId} fen={this.state.board||'' } />
+        <ChessBoard id={this.state.matchId} fen={this.state.board || ''} />
         {this.whiteplayer()}
       </Container>
     )

@@ -116,7 +116,6 @@ var App = class App extends Component {
                                 <Bracket game={this.state.tourney} GameComponent={gameComponent} homeOnTop={true} gameDimensions={{ height: 80, width: 200 }} /> : ''
                             }
                         </Grid.Column>
-
                         <Grid.Column>
                             {winner()}
                         </Grid.Column>
@@ -130,9 +129,9 @@ var App = class App extends Component {
                             <Divider />
                         </Grid.Column>
                         <Grid.Column>
-                            <Grid>
+                            <Grid centered>
                                 {this.state.matcheIdsInProgress.map((id) => {
-                                    return (<Grid.Column key={id} width={6} >
+                                    return (<Grid.Column key={id} width={7} >
                                         <MatchCard matchId={id} />
                                     </Grid.Column>)
                                 })}
