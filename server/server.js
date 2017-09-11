@@ -9,7 +9,7 @@ var config = require("cheslie-config"),
   Player = require('./player.js'),
   api = require('./api.js')(io);
 
-io.origins();
+io.origins('*:*');
 
 const PORT = process.env.PORT || config.tournament.port,
   IS_DEV = process.env.NODE_ENV === 'development';
