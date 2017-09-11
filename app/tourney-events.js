@@ -7,25 +7,25 @@ tourney.on('connect', function () {
 	tourney.emit('update');
 });
 
-tourney.on('tourney-started', function (data) {
-	console.log('tourney-started: ', data);
-});
+// tourney.on('tourney-started', function (data) {
+// 	console.log('tourney-started: ', data);
+// });
 
-tourney.on('tourney-finished', function (data) {
-	console.log('tourney-finished: ', data);
-});
+// tourney.on('tourney-finished', function (data) {
+// 	console.log('tourney-finished: ', data);
+// });
 
-tourney.on('tourney-update', function (data) {
-	console.log('tourney-update: ', data);
-});
+// tourney.on('tourney-update', function (data) {
+// 	console.log('tourney-update: ', data);
+// });
 
-tourney.on('match-update', function (data) {
-	console.log('match-update: ', data);
-});
+// tourney.on('match-update', function (data) {
+// 	console.log('match-update: ', data);
+// });
 
-tourney.on('players', function (data) {
-	console.log('players: ', data);
-});
+// tourney.on('players', function (data) {
+// 	console.log('players: ', data);
+// });
 
 function onPlayersUpdate(cb) {
 	tourney.on('players', players => cb(null, players));

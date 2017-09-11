@@ -17,10 +17,9 @@ var Api = class Api {
             name: tounement.name,
             players: tounement.players
         };
-        console.log('tourney-started', data);
+        // console.log('tourney-started', data);
         this.broadcast("tourney-started", data);
     }
-
 }
 
 module.exports = (io) => { return new Api(io) };

@@ -70,8 +70,8 @@ var TournamentMapper = class TournamentMapper {
       // only two sides are supported-home and visitor
       sides:
       {
-        'home': this.mapMatchToSideShape(game, 1),
-        'visitor': this.mapMatchToSideShape(game, 0)
+        'home': this.mapMatchToSideShape(game, 0),
+        'visitor': this.mapMatchToSideShape(game, 1)
       }
     }
   }
