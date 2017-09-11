@@ -9,8 +9,6 @@ var config = require("cheslie-config"),
   Player = require('./player.js'),
   api = require('./api.js')(io);
 
-io.set('origins', 'fiddle.jshell.net:443');
-
 const PORT = process.env.PORT || config.tournament.port,
   IS_DEV = process.env.NODE_ENV === 'development';
 
