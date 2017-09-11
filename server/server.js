@@ -3,17 +3,17 @@ var config = require("cheslie-config"),
   express = require('express'),
   app = express(),
   server = require('http').Server(app),
-  io = require('socket.io', {
-    extraHeaders: {
-      Credentials: true
-    }
-  })(server),
+  io = require('socket.io')(server),
   path = require('path'),
   Tournement = require('./tournement.js'),
   Player = require('./player.js'),
   api = require('./api.js')(io);
 
-io.origins('*:*');
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
 const PORT = process.env.PORT || config.tournament.port,
   IS_DEV = process.env.NODE_ENV === 'development';
