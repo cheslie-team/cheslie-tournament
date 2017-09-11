@@ -4,7 +4,7 @@ import MatchCard from './match-card';
 
 import PlayerList from './player-list';
 import { Bracket, BracketGame } from 'react-tournament-bracket';
-import { Button, Container, Header, Icon, Grid, Divider } from 'semantic-ui-react';
+import { Visibility, Button, Container, Header, Icon, Grid, Divider } from 'semantic-ui-react';
 
 var App = class App extends Component {
     constructor(props) {
@@ -60,7 +60,7 @@ var App = class App extends Component {
 
     gameComponent(props) {
         var changeHoveredTeamId = hoveredTeamId => { this.setState({ hoveredTeamId }) },
-            handleClick = game => {},
+            handleClick = game => { },
             myStyles = {
                 backgroundColor: '#e0e1e2',
                 hoverBackgroundColor: '#cccdce',
@@ -82,6 +82,18 @@ var App = class App extends Component {
     }
     render() {
         const gameComponent = props => this.gameComponent(props);
+        var winner = () => {
+            {
+                if (this.state.winner !== '') {
+                    return (<Header as='h1' icon textAlign='center'>
+                        <Icon color='yellow' name='winner' circular />
+                        <Header.Content>
+                            {this.state.winner}
+                        </Header.Content>
+                    </Header>)
+                }
+            }
+        }
         return (
             <div>
                 <Divider hidden section />
@@ -91,28 +103,41 @@ var App = class App extends Component {
                         <Grid.Column>
                             <Header textAlign='center' as='h1' dividing>Cheslie tourney</Header>
                         </Grid.Column>
-                    </Grid>
-                    <Divider hidden section />
-                    <PlayerList players={this.state.players} />
-                    <Button onClick={this.onStartTourneyClick} disabled={!this.state.isReadyToStart}>Start</Button>
-                    <Button onClick={resetTourney}>Reset</Button>
-                    {this.state.tourney ?
-                        <Bracket game={this.state.tourney} GameComponent={gameComponent} homeOnTop={true} gameDimensions={{ height: 80, width: 200 }} /> : ''
-                    }
-                    <h4>The winner is: {this.state.winner}</h4>
-                    <Header as='h3'>
-                        <Icon name='game' />
-                        <Header.Content>
-                            Areana
-                    </Header.Content>
-                    </Header>
-                    <Divider />
-                    <Grid>
-                        {this.state.matcheIdsInProgress.map((id) => {
-                            return(<Grid.Column key={id} width={6} >
-                                 <MatchCard  matchId={id} />
-                            </Grid.Column>)
-                        })}
+                        <Divider hidden section />
+                        <Grid.Column>
+                            <PlayerList players={this.state.players} />
+                        </Grid.Column>
+                        <Grid.Column>
+                            <Button onClick={this.onStartTourneyClick} disabled={!this.state.isReadyToStart}>Start</Button>
+                            <Button onClick={resetTourney}>Reset</Button>
+                        </Grid.Column>
+                        <Grid.Column>
+                            {this.state.tourney ?
+                                <Bracket game={this.state.tourney} GameComponent={gameComponent} homeOnTop={true} gameDimensions={{ height: 80, width: 200 }} /> : ''
+                            }
+                        </Grid.Column>
+
+                        <Grid.Column>
+                            {winner()}
+                        </Grid.Column>
+                        <Grid.Column>
+                            <Header as='h3'>
+                                <Icon name='game' />
+                                <Header.Content>
+                                    Areana
+                                </Header.Content>
+                            </Header>
+                            <Divider />
+                        </Grid.Column>
+                        <Grid.Column>
+                            <Grid>
+                                {this.state.matcheIdsInProgress.map((id) => {
+                                    return (<Grid.Column key={id} width={6} >
+                                        <MatchCard matchId={id} />
+                                    </Grid.Column>)
+                                })}
+                            </Grid>
+                        </Grid.Column>
                     </Grid>
                 </Container>
             </div>

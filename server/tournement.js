@@ -10,6 +10,7 @@ var config = require("cheslie-config"),
 gameServer.on('disconnect', () => {
   gameServer.connect();
 });
+
 gameServer.on("connect", function (socket) {
   console.log("Conntected to game");
   this.emit("subscribe");
@@ -69,7 +70,7 @@ var Tournament = class Tournament {
   }
   start() {
     if (this.started) return this.updateClient();
-    if (gameServer.disconnected) this.reconnectGameServer();
+    this.reconnectGameServer();
     this.started = true;
     this.api.tourneyStarted(this);
     this.updateTourneyOnGameEnds(this.tourney)
@@ -80,8 +81,6 @@ var Tournament = class Tournament {
   streamCurrentlyPlayingMatch() {
     gameServer.on('move', game => {
       this.api.broadcast('match-update', game)
-      // if (this.matchesInProgress().some((match) => { return match.gameId === game.gameId })) {
-      // }
     })
   }
   matchesInProgress() {
@@ -181,12 +180,8 @@ var Tournament = class Tournament {
     this.createOrUpdateTurney();
   }
   reconnectGameServer() {
-    if (gameServer) return gameServer.connect();
-    gameServer = socketIO(config.game.url);
-    gameServer.on("connect", function (socket) {
-      console.log("Conntected to game");
-      this.emit("subscribe");
-    });
+    if (!gameServer) return
+    if (gameServer.disconnected) { gameServer.connect(); }
   }
 };
 

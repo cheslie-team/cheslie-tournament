@@ -6,25 +6,25 @@ var TournamentMapper = class TournamentMapper {
     this.tourney = tournament.tourney;
   }
 
-  mapMatchToSideShape(match, isHome) {
+  mapMatchToSideShape(match, isBlack) {
     var sourceGameId = {
       s: match.id.s,
       r: match.id.r - 1,
       m: match.id.m
     }
     sourceGameId.m = (2 * (sourceGameId.m - 1)) + 1;
-    if (!isHome) sourceGameId.m++;
+    if (!isBlack) sourceGameId.m++;
     var touneyGameId = match.id.s + match.id.e + match.id.m;
     var sourceGame = this.tourney.findMatch(sourceGameId);
-    var playerName = ((player) => { return player ? player.name : '' })(this.tournament.playerAt(match.p[isHome]))
-    var playerScore = match.m ? match.m[isHome] : 0;
+    var playerName = ((player) => { return player ? player.name : '' })(this.tournament.playerAt(match.p[isBlack]))
+    var playerScore = match.m ? match.m[isBlack] : 0;
     return {
       score:
       {
         score: playerScore
       },
       seed: {
-        displayName: isHome ? 'White' : 'Black',
+        displayName: isBlack ? 'White' : 'Black',
         rank: 1,
         sourceGame: this.mapToClientGame(sourceGame),
         sourcePool: null,
