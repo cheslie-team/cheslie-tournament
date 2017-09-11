@@ -7,6 +7,9 @@ var config = require("cheslie-config"),
   socketIO = require("socket.io-client"),
   gameServer = socketIO(config.game.url);
 
+gameServer.on('disconnect', () => {
+  gameServer.connect();
+});
 gameServer.on("connect", function (socket) {
   console.log("Conntected to game");
   this.emit("subscribe");
@@ -66,6 +69,7 @@ var Tournament = class Tournament {
   }
   start() {
     if (this.started) return this.updateClient();
+    if (gameServer.disconnected) this.reconnectGameServer();
     this.started = true;
     this.api.tourneyStarted(this);
     this.updateTourneyOnGameEnds(this.tourney)
@@ -125,7 +129,7 @@ var Tournament = class Tournament {
       } else {
         resultArray = _.shuffle([1, 0]);
         this.tourney.score(game.id, resultArray);
-        game.reason = game.state = 'Won by coin';          ;
+        game.reason = game.state = 'Won by coin';;
       }
     }
     this.updateClient();
@@ -175,6 +179,14 @@ var Tournament = class Tournament {
     gameServer.removeAllListeners('move');
     gameServer.removeAllListeners('ended');
     this.createOrUpdateTurney();
+  }
+  reconnectGameServer() {
+    if (gameServer) return gameServer.connect();
+    gameServer = socketIO(config.game.url);
+    gameServer.on("connect", function (socket) {
+      console.log("Conntected to game");
+      this.emit("subscribe");
+    });
   }
 };
 
