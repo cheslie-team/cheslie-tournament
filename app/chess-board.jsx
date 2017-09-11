@@ -7,6 +7,7 @@ window.$ = window.jQuery = $;
 class ReactChessBoard extends Component {
     constructor(props) {
         super(props);
+        this.state = { id: this.props.id };
         this.board;
         this.cfg = {
             pieceTheme: 'vendor/chessboardjs0.3.0/img/chesspieces/wikipedia/{piece}.png',
@@ -28,7 +29,7 @@ class ReactChessBoard extends Component {
     }
 
     componentDidMount() {
-        this.board = ChessBoard('board', this.cfg);
+        this.board = ChessBoard(this.state.id, this.cfg);
         this.renderChessBoard(this.props.fen);
     }
 
@@ -38,8 +39,8 @@ class ReactChessBoard extends Component {
 
     render(props) {
         return (
-            <div id={'board'} >
-                ChessBoard</div>
+                <div id={this.state.id} >
+                    ChessBoard</div>
         );
     }
     renderChessBoard() {

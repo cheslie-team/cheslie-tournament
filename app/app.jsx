@@ -13,7 +13,7 @@ var App = class App extends Component {
             players: [],
             winner: '',
             isReadyToStart: false,
-            currentMatchId: -1
+            matcheIdsInProgress: []
         };
         onPlayersUpdate((err, updatedPlayers) => {
             this.setState({ players: updatedPlayers })
@@ -22,7 +22,7 @@ var App = class App extends Component {
             this.setState({ winner: result.winner })
         });
         onTourneyUpdate((err, tourney) => {
-            this.setState({ tourney: tourney.rootGame, currentMatchId: tourney.currentMatchId, isReadyToStart: tourney.isReadyToStart })
+            this.setState({ tourney: tourney.rootGame, matcheIdsInProgress: tourney.matcheIdsInProgress, isReadyToStart: tourney.isReadyToStart })
         });
         onMatchUpdate((err, move) => {
             if (move.gameId === this.state.currentMatchId) { this.setState({ currentlyPlayingMatch: move }) }
@@ -60,7 +60,7 @@ var App = class App extends Component {
 
     gameComponent(props) {
         var changeHoveredTeamId = hoveredTeamId => { this.setState({ hoveredTeamId }) },
-            handleClick = game => alert('clicked game: ' + game.name),
+            handleClick = game => {},
             myStyles = {
                 backgroundColor: '#e0e1e2',
                 hoverBackgroundColor: '#cccdce',
@@ -100,7 +100,6 @@ var App = class App extends Component {
                         <Bracket game={this.state.tourney} GameComponent={gameComponent} homeOnTop={true} gameDimensions={{ height: 80, width: 200 }} /> : ''
                     }
                     <h4>The winner is: {this.state.winner}</h4>
-                    <h3>The areana</h3>
                     <Header as='h3'>
                         <Icon name='game' />
                         <Header.Content>
@@ -108,7 +107,13 @@ var App = class App extends Component {
                     </Header.Content>
                     </Header>
                     <Divider />
-                    <MatchCard matchId={this.state.currentMatchId} />
+                    <Grid>
+                        {this.state.matcheIdsInProgress.map((id) => {
+                            return(<Grid.Column key={id} width={6} >
+                                 <MatchCard  matchId={id} />
+                            </Grid.Column>)
+                        })}
+                    </Grid>
                 </Container>
             </div>
         );

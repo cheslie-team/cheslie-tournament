@@ -24,7 +24,7 @@ var TournamentMapper = class TournamentMapper {
         score: playerScore
       },
       seed: {
-        displayName: isHome ? 'White' :'Black',
+        displayName: isHome ? 'White' : 'Black',
         rank: 1,
         sourceGame: this.mapToClientGame(sourceGame),
         sourcePool: null,
@@ -40,11 +40,10 @@ var TournamentMapper = class TournamentMapper {
   toClient() {
     var matches = this.tourney.matches,
       rootMatch = matches[matches.length - 1],
-      currentMatch = this.tourney.matches.find(game => { return game.m === undefined });
-    currentMatch = currentMatch || rootMatch;
+      matcheIdsInProgress = this.tournament.matchesInProgress().map(match => { return match.gameId });
     return {
       rootGame: this.mapToClientGame(rootMatch),
-      currentMatchId: currentMatch.gameId,
+      matcheIdsInProgress: matcheIdsInProgress,
       isReadyToStart: this.tournament.isReadyToStart()
     }
   }
@@ -54,10 +53,11 @@ var TournamentMapper = class TournamentMapper {
     var gameState = game.state || '';
     return {
       id: game.id.toString(),
+      gameId: game.gameId,
       // the game name
-      name: gameState == '' ? '' : 'State',
+      name: gameState,
       // optional: the label for the game within the bracket, e.g. Gold Finals, Silver Semi-Finals
-      bracketLabel: gameState,
+      bracketLabel: '',
       // the unix timestamp of the game-will be transformed to a human-readable time using momentjs
       scheduled: Date.now(),
       // where the game is played

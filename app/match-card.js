@@ -10,7 +10,7 @@ var MatchCard = class MatchCard extends Component {
     super(props);
     this.state = { matchId: this.props.matchId };
     onMatchUpdate((err, move) => {
-      if (move.gameId === this.props.matchId) { this.setState(move) }
+      if (move.gameId === this.state.matchId) { this.setState(move) }
     })
   }
   blackplayer() {
@@ -41,11 +41,11 @@ var MatchCard = class MatchCard extends Component {
       </Grid>)
   }
   render() {
-    const match = this.state;
+    
     return (
-      <Container style={{ width: '400px' }}>
+      <Container>
         {this.blackplayer()}
-        <ChessBoard fen={match.board} />
+        <ChessBoard id={this.state.matchId} fen={this.state.board||'' } />
         {this.whiteplayer()}
       </Container>
     )
