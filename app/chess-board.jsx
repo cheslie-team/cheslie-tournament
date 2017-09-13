@@ -29,6 +29,9 @@ class ReactChessBoard extends Component {
     }
 
     componentDidMount() {
+        if(!this.state.id){
+             return console.warn('ChessBoard: gameId not spessified');
+        }
         this.board = ChessBoard(this.state.id, this.cfg);
         this.renderChessBoard(this.props.fen);
     }
@@ -39,8 +42,7 @@ class ReactChessBoard extends Component {
 
     render(props) {
         return (
-                <div id={this.state.id} >
-                    ChessBoard</div>
+            <div id={this.state.id}></div>
         );
     }
     renderChessBoard() {

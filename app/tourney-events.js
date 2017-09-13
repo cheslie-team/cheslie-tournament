@@ -27,6 +27,10 @@ tourney.on('connect', function () {
 // 	console.log('players: ', data);
 // });
 
+// tourney.on('match-started', function (data) {
+// 	console.log('match-started: ', data);
+// });
+
 function onPlayersUpdate(cb) {
 	tourney.on('players', players => cb(null, players));
 }
@@ -39,6 +43,10 @@ function onMatchUpdate(cb) {
 	tourney.on('match-update', match => cb(null, match))
 }
 
+function onMatchStart(cb) {
+	tourney.on('match-started', match => cb(null, match))
+}
+
 function onTourneyUpdate(cb) {
 	tourney.on('tourney-update', tourney => cb(null, tourney))
 }
@@ -46,6 +54,7 @@ function onTourneyUpdate(cb) {
 function startTourney(players) {
 	tourney.emit('start-tourney', { players });
 }
+
 function addPlayerToTourney(player) {
 	tourney.emit('add-player', player);
 }
@@ -55,7 +64,7 @@ function removePlayerToTourney(player) {
 }
 
 function resetTourney() {
-	tourney.emit('reset-tourney', {} );
+	tourney.emit('reset-tourney', {});
 }
 
-export { onPlayersUpdate, startTourney, onTourneyFinished, onTourneyUpdate, onMatchUpdate, addPlayerToTourney, removePlayerToTourney, resetTourney };
+export { onPlayersUpdate, startTourney, onTourneyFinished, onTourneyUpdate, onMatchUpdate, addPlayerToTourney, removePlayerToTourney, resetTourney, onMatchStart };

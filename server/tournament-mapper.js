@@ -5,7 +5,12 @@ var TournamentMapper = class TournamentMapper {
     this.tournament = tournament;
     this.tourney = tournament.tourney;
   }
-
+  playerScore(match, isBlack) {
+    if (match.m) {
+      return match.m[isBlack]
+    }
+    return isBlack ? match.blackScore : match.whiteScore;
+  }
   mapMatchToSideShape(match, isBlack) {
     var sourceGameId = {
       s: match.id.s,
@@ -17,11 +22,10 @@ var TournamentMapper = class TournamentMapper {
     var touneyGameId = match.id.s + match.id.e + match.id.m;
     var sourceGame = this.tourney.findMatch(sourceGameId);
     var playerName = ((player) => { return player ? player.name : '' })(this.tournament.playerAt(match.p[isBlack]))
-    var playerScore = match.m ? match.m[isBlack] : 0;
     return {
       score:
       {
-        score: playerScore
+        score: this.playerScore(match, isBlack)
       },
       seed: {
         displayName: isBlack ? 'White' : 'Black',
@@ -40,10 +44,19 @@ var TournamentMapper = class TournamentMapper {
   toClient() {
     var matches = this.tourney.matches,
       rootMatch = matches[matches.length - 1],
-      matcheIdsInProgress = this.tournament.matchesInProgress().map(match => { return match.gameId });
+      matchesInProgress = this.tournament.matchesInProgress().map(match => {
+        return {
+          gameId: match.gameId,
+          white: match.whitePlayer,
+          black: match.blackPlayer,
+          valueBlackPieces: match.blackScore,
+          valueWhitePieces: match.whiteScore,
+          board: ''
+        }
+      });
     return {
       rootGame: this.mapToClientGame(rootMatch),
-      matcheIdsInProgress: matcheIdsInProgress,
+      matchesInProgress: matchesInProgress,
       isReadyToStart: this.tournament.isReadyToStart()
     }
   }

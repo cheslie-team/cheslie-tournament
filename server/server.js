@@ -48,7 +48,10 @@ io.on('connect', socket => {
   socket.on('update', () => {
     console.log('client update');
     socket.emit('players', players);
-    if (globalTourney) globalTourney.updateClient();
+    if (globalTourney) {
+      globalTourney.checkForTimeOuts();
+      globalTourney.updateClient();
+    }
   })
 
   socket.on('reset-tourney', () => {

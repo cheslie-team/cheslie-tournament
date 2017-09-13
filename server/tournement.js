@@ -61,6 +61,8 @@ var Tournament = class Tournament {
         var isWalkover = (game.p[0] === -1 || game.p[1] === -1);
         var tooFewPlayers = this.players.length < 4;
         game.state = isWalkover ? '' : 'To be played';
+        game.blackScore = 0;
+        game.whiteScore = 0;
         if (tooFewPlayers) game.state = 'Too few players';
       });
   }
@@ -85,6 +87,17 @@ var Tournament = class Tournament {
   streamCurrentlyPlayingMatch() {
     gameServer.on('move', game => {
       this.api.broadcast('match-update', game)
+      this.tourney.matches
+        .filter(match => { return match.gameId === game.id })
+        .forEach(match => {
+          match.lastMove = Date.now();
+          match.isWhitesTurn = game.turn === 'w' ? true : false;
+          match.blackScore = game.valueBlackPieces;
+          match.whiteScore = game.valueWhitePieces;
+        });
+    })
+    gameServer.on('started', game => {
+      this.api.broadcast('match-started', game)
     })
   }
   matchesInProgress() {
@@ -132,7 +145,7 @@ var Tournament = class Tournament {
       } else {
         resultArray = _.shuffle([1, 0]);
         this.tourney.score(game.id, resultArray);
-        game.reason = game.state = 'Won by coin';;
+        game.reason = game.state = 'Won by coin';
       }
     }
     this.updateClient();
@@ -140,8 +153,11 @@ var Tournament = class Tournament {
   playMatch(game) {
     game.numberOfMatches++;
     game.state = 'In progress (' + game.numberOfMatches + ')';
+    game.lastMove = Date.now();
     var white = game.white = this.playerAt(game.p[0]);
     var black = game.black = this.playerAt(game.p[1]);
+    game.whitePlayer = white.name;
+    game.blackPlayer = black.name;
     game.gameId = this.createGameId(game);
     console.log("Starting game: ", game.gameId, " for the ", game.numberOfMatches, " time");
     this.currentlyPlayingMatch = game;
@@ -155,8 +171,7 @@ var Tournament = class Tournament {
   }
   isBothPlayersSet(match) {
     return (match.p[0] !== 0 && match.p[1] !== 0) &&
-      (match.p[0] !== -1 && match.p[1] !== -1)
-      ;
+      (match.p[0] !== -1 && match.p[1] !== -1);
   }
   isMatchFinished(match) {
     if (!Array.isArray(match.m)) return false;
@@ -175,6 +190,20 @@ var Tournament = class Tournament {
   updateClient() {
     this.api.broadcast("tourney-update", this.clientTourney());
   }
+  checkForTimeOuts() {
+    var timeOutLimit = Date.now() - 10000;
+    this.tourney.matches
+      .filter(this.tourney.isPlayable)
+      .filter(match => { return match.lastMove && (match.lastMove < timeOutLimit) })
+      .forEach(match => {
+        var resultArray = match.isWhitesTurn ? [1, 0] : [0, 1];
+        if (this.tourney.score(match.id, resultArray)) {
+          match.state = 'Time out';
+          this.playNextMatches();
+        }
+      });
+  }
+
   stop() {
     this.started = false;
     this.players.map(player => player.inTouney = '');

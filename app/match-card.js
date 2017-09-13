@@ -8,9 +8,9 @@ import ChessBoard from './chess-board';
 var MatchCard = class MatchCard extends Component {
   constructor(props) {
     super(props);
-    this.state = { matchId: this.props.matchId };
+    this.state = props.match;
     onMatchUpdate((err, move) => {
-      if (move.gameId === this.state.matchId) { this.setState(move) }
+      if (move.gameId === this.state.gameId) { this.setState(move) }
     })
   }
   blackplayer() {
@@ -45,7 +45,7 @@ var MatchCard = class MatchCard extends Component {
     return (
       <Container>
         {this.blackplayer()}
-        <ChessBoard id={this.state.matchId} fen={this.state.board || ''} />
+        <ChessBoard id={this.state.gameId} fen={this.state.board || ''} />
         {this.whiteplayer()}
       </Container>
     )

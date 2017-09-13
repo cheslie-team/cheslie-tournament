@@ -13,7 +13,7 @@ var App = class App extends Component {
             players: [],
             winner: '',
             isReadyToStart: false,
-            matcheIdsInProgress: []
+            matchesInProgress: []
         };
         onPlayersUpdate((err, updatedPlayers) => {
             this.setState({ players: updatedPlayers })
@@ -22,7 +22,7 @@ var App = class App extends Component {
             this.setState({ winner: result.winner })
         });
         onTourneyUpdate((err, tourney) => {
-            this.setState({ tourney: tourney.rootGame, matcheIdsInProgress: tourney.matcheIdsInProgress, isReadyToStart: tourney.isReadyToStart })
+            this.setState({ tourney: tourney.rootGame, matchesInProgress: tourney.matchesInProgress, isReadyToStart: tourney.isReadyToStart })
         });
         onMatchUpdate((err, move) => {
             if (move.gameId === this.state.currentMatchId) { this.setState({ currentlyPlayingMatch: move }) }
@@ -130,9 +130,9 @@ var App = class App extends Component {
                         </Grid.Column>
                         <Grid.Column>
                             <Grid centered>
-                                {this.state.matcheIdsInProgress.map((id) => {
-                                    return (<Grid.Column key={id} width={7} >
-                                        <MatchCard matchId={id} />
+                                {this.state.matchesInProgress.map((match) => {
+                                    return (<Grid.Column key={match.gameId} width={7} >
+                                        <MatchCard match={match} />
                                     </Grid.Column>)
                                 })}
                             </Grid>
