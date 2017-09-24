@@ -86,9 +86,11 @@ var Tournament = class Tournament {
 
   streamCurrentlyPlayingMatch() {
     gameServer.on('move', game => {
+      if(!game || !game.gameId) return;
+
       this.api.broadcast('match-update', game)
       this.tourney.matches
-        .filter(match => { return match.gameId === game.id })
+        .filter(match => { return match.gameId === game.gameId })
         .forEach(match => {
           match.lastMove = Date.now();
           match.isWhitesTurn = game.turn === 'w' ? true : false;
@@ -158,6 +160,7 @@ var Tournament = class Tournament {
     var black = game.black = this.playerAt(game.p[1]);
     game.whitePlayer = white.name;
     game.blackPlayer = black.name;
+    game.isWhitesTurn = true;
     game.gameId = this.createGameId(game);
     console.log("Starting game: ", game.gameId, " for the ", game.numberOfMatches, " time");
     this.currentlyPlayingMatch = game;
@@ -192,11 +195,11 @@ var Tournament = class Tournament {
   }
   checkForTimeOuts() {
     var timeOutLimit = Date.now() - 10000;
-    this.tourney.matches
+    this.matchesInProgress()
       .filter(this.tourney.isPlayable)
       .filter(match => { return match.lastMove && (match.lastMove < timeOutLimit) })
       .forEach(match => {
-        var resultArray = match.isWhitesTurn ? [1, 0] : [0, 1];
+        var resultArray = match.isWhitesTurn ? [0, 1] : [1, 0];
         if (this.tourney.score(match.id, resultArray)) {
           match.state = 'Time out';
           this.playNextMatches();

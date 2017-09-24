@@ -9,7 +9,7 @@ var TournamentMapper = class TournamentMapper {
     if (match.m) {
       return match.m[isBlack]
     }
-    return isBlack ? match.blackScore : match.whiteScore;
+    return 0;
   }
   mapMatchToSideShape(match, isBlack) {
     var sourceGameId = {
