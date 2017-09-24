@@ -193,19 +193,6 @@ var Tournament = class Tournament {
   updateClient() {
     this.api.broadcast("tourney-update", this.clientTourney());
   }
-  checkForTimeOuts() {
-    var timeOutLimit = Date.now() - 10000;
-    this.matchesInProgress()
-      .filter(this.tourney.isPlayable)
-      .filter(match => { return match.lastMove && (match.lastMove < timeOutLimit) })
-      .forEach(match => {
-        var resultArray = match.isWhitesTurn ? [0, 1] : [1, 0];
-        if (this.tourney.score(match.id, resultArray)) {
-          match.state = 'Time out';
-          this.playNextMatches();
-        }
-      });
-  }
 
   stop() {
     this.started = false;

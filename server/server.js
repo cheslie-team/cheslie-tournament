@@ -47,7 +47,7 @@ io.on('connect', socket => {
     console.log('client update');
     socket.emit('players', players);
     if (globalTourney) {
-      globalTourney.checkForTimeOuts();
+      // globalTourney.checkForTimeOuts();
       globalTourney.updateClient();
     }
   })
