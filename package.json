@@ -2,14 +2,14 @@
   "name": "cheslie-tournement",
   "version": "1.0.0",
   "description": "",
-  "main": "server/server.js",
+  "main": "server/tourney-server.js",
   "scripts": {
     "clean": "rimraf dist",
     "copy": "cp  -f -r app/* dist/",
     "build:webpack": "webpack --progress --colors --config ./webpack.config.js",
     "build": "npm run clean && npm run build:webpack && npm run copy",
-    "start": "node server/server.js",
-    "dev": "NODE_ENV=development node server/server.js",
+    "start": "node server/tourney-server.js",
+    "dev": "NODE_ENV=development node server/tourney-server.js",
     "lint": "eslint ./app;",
     "postinstall": "npm run build"
   },
