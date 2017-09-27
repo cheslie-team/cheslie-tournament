@@ -20,12 +20,24 @@ if (IS_DEV) {
 
 var players = [],
   globalTourney;
+
 io.on('connect', socket => {
   if (!globalTourney) globalTourney = new Tournement([], api);
+
+  socket.leave = () => {
+    players = players.filter((player) => { return player.id !== socket.id });
+    api.broadcast('players', players);
+  }
+
   socket.on('enter', playerName => {
+    if (players.some(player => { player.name === playerName || player.id === socket.id })) return;
     players.push(new Player(socket, playerName));
     api.broadcast('players', players);
     console.log('New player entered lobby, %s', playerName);
+  })
+
+  socket.on('leave', () => {
+    socket.leave();
   })
 
   socket.on('add-player', (clientPlayer) => {
@@ -47,14 +59,14 @@ io.on('connect', socket => {
     console.log('client update');
     socket.emit('players', players);
     if (globalTourney) {
-      // globalTourney.checkForTimeOuts();
       globalTourney.updateClient();
     }
   })
 
   socket.on('reset-tourney', () => {
     if (globalTourney) globalTourney.stop();
-    players.map(player => { player.reset() })
+    players.map(player => { player.reconnect() });
+    players = [];
     globalTourney = new Tournement([], api);
     api.broadcast('players', players);
   })
@@ -67,8 +79,7 @@ io.on('connect', socket => {
   })
 
   socket.on('disconnect', () => {
-    players = players.filter((player) => { return player.id !== socket.id });
-    api.broadcast('players', players);
+    socket.leave();
   });
 });
 

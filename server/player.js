@@ -21,8 +21,8 @@ var Player = class Player {
             '/vendor/chessboardjs0.3.0/img/chesspieces/wikipedia/wR.png']
         return _.shuffle(avatars)[0]
     }
-    reset(){
-        this.inTouney = "";
+    reconnect(){
+        this.socket.emit('reconnect');
     }
     toJSON() {
         return {

@@ -10,7 +10,9 @@ var PlayerListItem = class PlayerListItem extends Component {
         onPlayersUpdate((err, updatedPlayers) => {
             var updatedPlayer = updatedPlayers.find(player => { return player.id === this.state.id });
             if (updatedPlayer)
-                this.setState(updatedPlayer);
+                if (this.isMounted) { // Dette er ikke bra. Må implementere actions/events riktig for p fikse
+                    this.setState(updatedPlayer);
+                }
         });
     }
     avatar() {
@@ -31,7 +33,7 @@ var PlayerListItem = class PlayerListItem extends Component {
     render() {
         const player = this.state;
         return (
-            <List.Item onClick={() => {this.togglePlayerinTouneyClicked()}}>
+            <List.Item onClick={() => { this.togglePlayerinTouneyClicked() }}>
                 <List.Content floated='right'>
                     <Button.Group>
                         <Button toggle active={this.isPlayerInTouney()} onClick={() => addPlayerToTourney(player)}>In</Button>
