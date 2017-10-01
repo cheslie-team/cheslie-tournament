@@ -130,7 +130,7 @@ var App = class App extends Component {
                         </Grid.Column>
                         <Grid.Column>
                             <Grid centered>
-                                {(this.state.matchesInProgress || []).map((match) => {
+                                {(this.state.matchesInProgress).map((match) => {
                                     return (<Grid.Column key={match.gameId} width={7} >
                                         <MatchCard match={match} />
                                     </Grid.Column>)

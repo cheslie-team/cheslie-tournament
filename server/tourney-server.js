@@ -30,7 +30,8 @@ io.on('connect', socket => {
   }
 
   socket.on('enter', playerName => {
-    if (players.some(player => { player.name === playerName || player.id === socket.id })) return;
+    if (players.some(player => { return player.name === playerName })) return;
+    if (players.some(player => { return player.id === socket.id })) return;
     players.push(new Player(socket, playerName));
     api.broadcast('players', players);
     console.log('New player entered lobby, %s', playerName);
