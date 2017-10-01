@@ -1,14 +1,9 @@
-import openSocket from 'socket.io-client';
-const tourney = openSocket();
 
-tourney.on('connect', function () {
-    console.log('Conntected to tourney-server');
-});
+var flux = require('flux-react');
 
-tourney.emit('update');
-
-function startTourney(players) {
-    tourney.emit('start-tourney', { players });
-}
-
-export { startTourney };
+module.exports = flux.createActions([
+  'startTourney',
+  'tourneyFinished',
+  'setPlayers',
+  'matchUpdate',
+]);

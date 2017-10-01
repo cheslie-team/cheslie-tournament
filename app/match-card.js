@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { Segment, List, Grid, Icon, Divider, Card, Image, Button, Container, Header, ListContent } from 'semantic-ui-react';
-import { onMatchUpdate } from './tourney-events';
-import PlayerListItem from './player-list-item';
+import TourneyStore from './tourney-store';
 import ChessBoard from './chess-board';
 
 
@@ -9,10 +8,17 @@ var MatchCard = class MatchCard extends Component {
   constructor(props) {
     super(props);
     this.state = props.match;
-    onMatchUpdate((err, move) => {
-      if (move.gameId === this.state.gameId) { this.setState(move) }
-    })
   }
+
+  componentWillMount() {
+    TourneyStore.on('matchUpdate', () => {
+      var match = TourneyStore.getMatch(this.state.gameId);
+      if (match) {
+        this.setState(match);
+      }
+    });
+  }
+
   blackplayer() {
     if (!this.state.black) return '';
     const match = this.state;

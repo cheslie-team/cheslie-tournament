@@ -1,7 +1,8 @@
 import React, { Component, PropTypes } from 'react';
-import { onPlayersUpdate, startTourney, onTourneyFinished, onTourneyUpdate, onMatchUpdate, resetTourney } from './tourney-events';
+import { onPlayersUpdate, onTourneyUpdate, resetTourney } from './tourney-events';
 import MatchCard from './match-card';
-
+import tourneyActions from './tourney-actions';
+import TourneyStore from './tourney-store';
 import PlayerList from './player-list';
 import { Bracket, BracketGame } from 'react-tournament-bracket';
 import { Visibility, Button, Container, Header, Icon, Grid, Divider } from 'semantic-ui-react';
@@ -15,47 +16,25 @@ var App = class App extends Component {
             isReadyToStart: false,
             matchesInProgress: []
         };
-        onPlayersUpdate((err, updatedPlayers) => {
-            this.setState({ players: updatedPlayers })
-        });
-        onTourneyFinished((err, result) => {
-            this.setState({ winner: result.winner })
-        });
         onTourneyUpdate((err, tourney) => {
             this.setState({ tourney: tourney.rootGame, matchesInProgress: tourney.matchesInProgress || [], isReadyToStart: tourney.isReadyToStart })
-        });
-        onMatchUpdate((err, move) => {
-            if (move.gameId === this.state.currentMatchId) { this.setState({ currentlyPlayingMatch: move }) }
         });
         this.onStartTourneyClick = this.onStartTourneyClick.bind(this);
     }
 
+    componentWillMount() {
+        TourneyStore.on('playersUpdated', () => {
+            this.setState({ players: TourneyStore.getPlayers() })
+        });
+        TourneyStore.on('tourneyFinished', () => {
+            this.setState({ winner: TourneyStore.getWinner() })
+        })
+    }
     onStartTourneyClick() {
         if (!this.state) return;
         if (!this.state.isReadyToStart) return;
-        startTourney(this.state.players);
+        tourneyActions.startTourney(this.state.players);
         this.state.winner = '';
-    }
-
-    currentMatch() {
-        return this.state.currentlyPlayingMatch;
-    }
-    currentMatchOpponents() {
-        var match = this.state.currentlyPlayingMatch;
-        if (!match) return '';
-        return match.white + '  (' + match.valueWhitePieces
-            + ')    VS   '
-            + match.black + '  (' + match.valueBlackPieces + ')';
-    }
-    currentScore() {
-        var match = this.state.currentlyPlayingMatch;
-        if (!match) return 0;
-        return parseInt(match.valueWhitePieces) - parseInt(match.valueBlackPieces)
-    }
-    currentMatchFen() {
-        var match = this.state.currentlyPlayingMatch;
-        if (!match) return ''
-        return match.board;
     }
 
     gameComponent(props) {
