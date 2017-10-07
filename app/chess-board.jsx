@@ -7,8 +7,6 @@ window.$ = window.jQuery = $;
 class ReactChessBoard extends Component {
     constructor(props) {
         super(props);
-        this.state = { id: this.props.id };
-        this.board;
         this.cfg = {
             pieceTheme: 'vendor/chessboardjs0.3.0/img/chesspieces/wikipedia/{piece}.png',
             position: 'start'
@@ -29,24 +27,17 @@ class ReactChessBoard extends Component {
     }
 
     componentDidMount() {
-        if(!this.state.id){
-             return console.warn('ChessBoard: gameId not spessified');
+        if (!this.props.id) {
+            return console.warn('ChessBoard: gameId not spessified');
         }
-        this.board = ChessBoard(this.state.id, this.cfg);
-        this.renderChessBoard(this.props.fen);
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        return false;
+        this.board = ChessBoard(this.props.id, this.cfg);
+        this.updatePosition(this.props.fen);
     }
 
     render(props) {
         return (
-            <div id={this.state.id}></div>
+            <div id={this.props.id}></div>
         );
-    }
-    renderChessBoard() {
-
     }
 }
 export default ReactChessBoard;

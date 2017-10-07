@@ -22,6 +22,7 @@ var Tournament = class Tournament {
     this.players = players || [];
     this.started = false;
     this.name = generate().dashed;
+    this.mapper = new Mapper(this);
     this.createOrUpdateTurney();
     players.map(this.addPlayer);
   }
@@ -61,8 +62,8 @@ var Tournament = class Tournament {
         var isWalkover = (game.p[0] === -1 || game.p[1] === -1);
         var tooFewPlayers = this.players.length < 4;
         game.state = isWalkover ? '' : 'To be played';
-        game.blackScore = 0;
-        game.whiteScore = 0;
+        game.valueBlackPieces = 0;
+        game.valueWhitePieces = 0;
         if (tooFewPlayers) game.state = 'Too few players';
       });
   }
@@ -86,30 +87,44 @@ var Tournament = class Tournament {
 
   streamCurrentlyPlayingMatch() {
     gameServer.on('move', game => {
-      if(!game || !game.gameId) return;
-
-      this.api.broadcast('match-update', game)
+      if (!game || !game.gameId) return;
       this.tourney.matches
         .filter(match => { return match.gameId === game.gameId })
         .forEach(match => {
           match.lastMove = Date.now();
           match.isWhitesTurn = game.turn === 'w' ? true : false;
-          match.blackScore = game.valueBlackPieces;
-          match.whiteScore = game.valueWhitePieces;
+          match.valueBlackPieces = game.valueBlackPieces;
+          match.valueWhitePieces = game.valueWhitePieces;
+          match.board = game.board;
         });
+      var clientMatch = this.mapper.mapGameToClientMatch(game);
+      if (clientMatch) this.api.broadcast('match-update', clientMatch);
     })
+
     gameServer.on('started', game => {
-      this.api.broadcast('match-started', game)
+      var match = this.getMatch(game.gameId)
+      if (!match) return;
+
+      match.started = game.started;
+      var clientMatch = this.mapper.mapMatchToClientMatch(match);
+      this.api.broadcast('match-started', clientMatch);
     })
   }
-  matchesInProgress() {
-    return this.tourney.matches.filter(match => { return match.gameId && !this.isMatchFinished(match) });
+
+  startedMatches() {
+    return this.tourney.matches.filter(match => { return match.gameId !== undefined });
   }
+
+  getMatch(gameId) {
+    if (!gameId) return;
+    return this.tourney.matches.find(match => { return match.gameId === gameId });
+  }
+
   updateTourneyOnGameEnds(tourney) {
     gameServer.on("ended", (gameState) => {
       if (!this.tourney) return;
 
-      var match = tourney.matches.find(match => { return match.gameId === gameState.id });
+      var match = this.getMatch(gameState.id);
       if (match) {
         this.updateGameWithResults(match, gameState)
         this.playNextMatches();
@@ -176,10 +191,6 @@ var Tournament = class Tournament {
     return (match.p[0] !== 0 && match.p[1] !== 0) &&
       (match.p[0] !== -1 && match.p[1] !== -1);
   }
-  isMatchFinished(match) {
-    if (!Array.isArray(match.m)) return false;
-    return match.m[0] !== 0 || match.m[1] !== 0;
-  }
   playNextMatches() {
     if (this.isFinished() || this.tourney.isDone()) return this.finished();
     var games = this.tourney.matches
@@ -188,12 +199,11 @@ var Tournament = class Tournament {
     this.updateClient();
   }
   clientTourney() {
-    return (new Mapper(this)).toClient();
+    return this.mapper.toClient();
   }
   updateClient() {
     this.api.broadcast("tourney-update", this.clientTourney());
   }
-
   stop() {
     this.started = false;
     this.players.map(player => player.inTouney = '');

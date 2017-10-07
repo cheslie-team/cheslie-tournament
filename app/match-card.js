@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Segment, List, Grid, Icon, Divider, Card, Image, Button, Container, Header, ListContent } from 'semantic-ui-react';
-import TourneyStore from './tourney-store';
+import MatchStore from './match-store';
 import ChessBoard from './chess-board';
 
 
@@ -11,12 +11,13 @@ var MatchCard = class MatchCard extends Component {
   }
 
   componentWillMount() {
-    TourneyStore.on('matchUpdate', () => {
-      var match = TourneyStore.getMatch(this.state.gameId);
-      if (match) {
-        this.setState(match);
-      }
+    this.subscription = MatchStore.addListener(() => {
+      this.setState(MatchStore.getMatch(this.state.id));
     });
+  }
+  componentWillUnmount() {
+    if (!this.subscription) return;
+    this.subscription.remove();
   }
 
   blackplayer() {
@@ -51,7 +52,7 @@ var MatchCard = class MatchCard extends Component {
     return (
       <Container>
         {this.blackplayer()}
-        <ChessBoard id={this.state.gameId} fen={this.state.board || ''} />
+        <ChessBoard id={this.state.id} fen={this.state.board || ''} />
         {this.whiteplayer()}
       </Container>
     )

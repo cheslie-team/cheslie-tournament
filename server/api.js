@@ -11,6 +11,7 @@ var Api = class Api {
     }
     broadcast(event, data) {
         this.io.to('subscribers').emit(event, data);
+        // console.log(event + ': /n ' + data);
     }
     tourneyStarted(tounement) {
         var data = {

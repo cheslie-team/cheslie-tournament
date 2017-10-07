@@ -1,9 +1,8 @@
 import React, { Component, PropTypes } from 'react';
-import { onPlayersUpdate, onTourneyUpdate, resetTourney } from './tourney-events';
-import MatchCard from './match-card';
-import tourneyActions from './tourney-actions';
+import Actions from './actions';
 import TourneyStore from './tourney-store';
 import PlayerList from './player-list';
+import MatchGrid from './match-grid';
 import { Bracket, BracketGame } from 'react-tournament-bracket';
 import { Visibility, Button, Container, Header, Icon, Grid, Divider } from 'semantic-ui-react';
 
@@ -11,30 +10,34 @@ var App = class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            players: [],
-            winner: '',
+            started: false,
+            winner: undefined,
             isReadyToStart: false,
-            matchesInProgress: []
+            rootGame: undefined
         };
-        onTourneyUpdate((err, tourney) => {
-            this.setState({ tourney: tourney.rootGame, matchesInProgress: tourney.matchesInProgress || [], isReadyToStart: tourney.isReadyToStart })
-        });
         this.onStartTourneyClick = this.onStartTourneyClick.bind(this);
     }
-
     componentWillMount() {
-        TourneyStore.on('playersUpdated', () => {
-            this.setState({ players: TourneyStore.getPlayers() })
+        this.subscription = TourneyStore.addListener(() => {
+            var newState = TourneyStore.getState()
+            this.setState({
+                started: newState.get('started'),
+                winner: newState.get('winner'),
+                isReadyToStart: newState.get('isReadyToStart'),
+                rootGame: newState.get('rootGame')
+            })
         });
-        TourneyStore.on('tourneyFinished', () => {
-            this.setState({ winner: TourneyStore.getWinner() })
-        })
     }
+    componentWillUnmount() {
+        if (!this.subscription) return;
+        this.subscription.remove();
+    }
+
     onStartTourneyClick() {
         if (!this.state) return;
         if (!this.state.isReadyToStart) return;
-        tourneyActions.startTourney(this.state.players);
-        this.state.winner = '';
+        Actions.startTourney(this.state.players);
+        this.state.winner = undefined;
     }
 
     gameComponent(props) {
@@ -63,7 +66,7 @@ var App = class App extends Component {
         const gameComponent = props => this.gameComponent(props);
         var winner = () => {
             {
-                if (this.state.winner !== '') {
+                if (this.state.winner !== undefined) {
                     return (<Header as='h1' icon textAlign='center'>
                         <Icon color='yellow' name='winner' circular />
                         <Header.Content>
@@ -77,45 +80,29 @@ var App = class App extends Component {
             <div>
                 <Divider hidden section />
                 <Container>
-
                     <Grid centered columns={1}>
                         <Grid.Column>
                             <Header textAlign='center' as='h1' dividing>Cheslie tourney</Header>
                         </Grid.Column>
                         <Divider hidden section />
                         <Grid.Column>
-                            <PlayerList players={this.state.players} />
+                            <PlayerList />
                         </Grid.Column>
                         <Grid.Column>
                             <Button onClick={this.onStartTourneyClick} disabled={!this.state.isReadyToStart}>Start</Button>
-                            <Button onClick={resetTourney}>Reset</Button>
+                            <Button onClick={Actions.resetTourney}>Reset</Button>
                         </Grid.Column>
-                        <Grid.Column>
-                            {this.state.tourney ?
-                                <Bracket game={this.state.tourney} GameComponent={gameComponent} homeOnTop={true} gameDimensions={{ height: 80, width: 200 }} /> : ''
-                            }
-                        </Grid.Column>
+                        {this.state.rootGame &&
+                            <Grid.Column>
+                                <Grid centered>
+                                    <Bracket game={this.state.rootGame} GameComponent={gameComponent} homeOnTop={true} gameDimensions={{ height: 80, width: 200 }} />
+                                </Grid>
+                            </Grid.Column>
+                        }
                         <Grid.Column>
                             {winner()}
                         </Grid.Column>
-                        <Grid.Column>
-                            <Header as='h3'>
-                                <Icon name='game' />
-                                <Header.Content>
-                                    Areana
-                                </Header.Content>
-                            </Header>
-                            <Divider />
-                        </Grid.Column>
-                        <Grid.Column>
-                            <Grid centered>
-                                {(this.state.matchesInProgress).map((match) => {
-                                    return (<Grid.Column key={match.gameId} width={7} >
-                                        <MatchCard match={match} />
-                                    </Grid.Column>)
-                                })}
-                            </Grid>
-                        </Grid.Column>
+                        <MatchGrid />
                     </Grid>
                 </Container>
             </div>

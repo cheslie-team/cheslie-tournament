@@ -3,7 +3,9 @@
 var TournamentMapper = class TournamentMapper {
   constructor(tournament) {
     this.tournament = tournament;
-    this.tourney = tournament.tourney;
+  }
+  getTourney() {
+    return this.tournament.tourney;
   }
   playerScore(match, isBlack) {
     if (match.m) {
@@ -20,7 +22,7 @@ var TournamentMapper = class TournamentMapper {
     sourceGameId.m = (2 * (sourceGameId.m - 1)) + 1;
     if (!isBlack) sourceGameId.m++;
     var touneyGameId = match.id.s + match.id.e + match.id.m;
-    var sourceGame = this.tourney.findMatch(sourceGameId);
+    var sourceGame = this.getTourney().findMatch(sourceGameId);
     var playerName = ((player) => { return player ? player.name : '' })(this.tournament.playerAt(match.p[isBlack]))
     return {
       score:
@@ -28,7 +30,7 @@ var TournamentMapper = class TournamentMapper {
         score: this.playerScore(match, isBlack)
       },
       seed: {
-        displayName: isBlack ? 'White' : 'Black',
+        displayName: isBlack ? 'Black' : 'White',
         rank: 1,
         sourceGame: this.mapToClientGame(sourceGame),
         sourcePool: null,
@@ -40,47 +42,55 @@ var TournamentMapper = class TournamentMapper {
       },
     }
   }
-
-  toClient() {
-    var matches = this.tourney.matches,
-      rootMatch = matches[matches.length - 1],
-      matchesInProgress = this.tournament.matchesInProgress().map(match => {
-        return {
-          gameId: match.gameId,
-          white: match.whitePlayer,
-          black: match.blackPlayer,
-          valueBlackPieces: match.blackScore,
-          valueWhitePieces: match.whiteScore,
-          board: ''
-        }
-      });
+  isMatchFinished(match) {
+    if (!Array.isArray(match.m)) return false;
+    return match.m[0] !== 0 || match.m[1] !== 0;
+  }
+  mapMatchToClientMatch(match) {
     return {
-      rootGame: this.mapToClientGame(rootMatch),
-      matchesInProgress: matchesInProgress,
-      isReadyToStart: this.tournament.isReadyToStart()
+      gameId: match.gameId,
+      id: match.gameId,
+      white: match.whitePlayer,
+      black: match.blackPlayer,
+      valueBlackPieces: match.valueBlackPieces,
+      valueWhitePieces: match.valueWhitePieces,
+      board: match.board,
+      inProgress: !this.isMatchFinished(match),
+      started: match.started
     }
   }
 
+  mapGameToClientMatch(game) {
+    if (!game || !game.gameId) return;
+    return this.mapMatchToClientMatch(this.tournament.getMatch(game.gameId));
+  }
+
+  toClient() {
+    var matches = this.getTourney().matches,
+      rootMatch = matches[matches.length - 1];
+    return {
+      rootGame: this.mapToClientGame(rootMatch),
+      startedMatches: this.tournament.startedMatches().map(this.mapMatchToClientMatch.bind(this)),
+      started: this.tournament.started,
+      isReadyToStart: this.tournament.isReadyToStart()
+    }
+  }
   mapToClientGame(game) {
     if (!game) return null;
+    var id = game.id || 0;
     var gameState = game.state || '';
     return {
-      id: game.id.toString(),
+      id: id.toString(),
       gameId: game.gameId,
-      // the game name
       name: gameState,
-      // optional: the label for the game within the bracket, e.g. Gold Finals, Silver Semi-Finals
       bracketLabel: '',
-      // the unix timestamp of the game-will be transformed to a human-readable time using momentjs
       scheduled: Date.now(),
-      // where the game is played
       court: {
         name: 'Cheslie-tourney',
         venue: {
           name: 'Cheslie'
         }
       },
-      // only two sides are supported-home and visitor
       sides:
       {
         'home': this.mapMatchToSideShape(game, 0),
