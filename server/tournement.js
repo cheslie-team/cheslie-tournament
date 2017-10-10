@@ -96,6 +96,7 @@ var Tournament = class Tournament {
           match.valueBlackPieces = game.valueBlackPieces;
           match.valueWhitePieces = game.valueWhitePieces;
           match.board = game.board;
+          match.started = game.started;
         });
       var clientMatch = this.mapper.mapGameToClientMatch(game);
       if (clientMatch) this.api.broadcast('match-update', clientMatch);

@@ -18,8 +18,7 @@ class MatchStore extends ReduceStore {
         return this._state.get(id);
     }
     getMatches() {
-        return Array.from(this._state.values())
-            .sort((matchA, matchB) => { return matchA.started - matchB.started });
+        return Array.from(this._state.values()).sort((matchA, matchB) => { return matchB.started - matchA.started });
     }
 
     reduce(state, action) {

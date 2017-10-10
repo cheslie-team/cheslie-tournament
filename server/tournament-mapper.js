@@ -56,7 +56,7 @@ var TournamentMapper = class TournamentMapper {
       valueWhitePieces: match.valueWhitePieces,
       board: match.board,
       inProgress: !this.isMatchFinished(match),
-      started: match.started
+      started: match.started,
     }
   }
 
