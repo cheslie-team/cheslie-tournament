@@ -220,6 +220,7 @@ var Tournament = class Tournament {
     this.tourney = undefined;
     gameServer.removeAllListeners('move');
     gameServer.removeAllListeners('ended');
+    gameServer.removeAllListeners('started');
     this.createOrUpdateTurney();
   }
   reconnectGameServer() {
