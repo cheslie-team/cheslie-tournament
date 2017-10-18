@@ -127,6 +127,7 @@ var Tournament = class Tournament {
 
       var match = this.getMatch(gameState.id);
       if (match) {
+        console.log('game ended frome game-server: ', gameState);
         this.updateGameWithResults(match, gameState)
         this.playNextMatches();
       }
@@ -152,18 +153,18 @@ var Tournament = class Tournament {
     });
     console.log(this.winner(), "is the winner of ", this.name);
   }
-  updateGameWithResults(game, results) {
+  updateGameWithResults(match, results) {
     var resultArray = results.result.split('-').map(str => parseInt(str));
-    var isFinished = this.tourney.score(game.id, resultArray);
-    game.reason = game.state = results.reason;
+    var isFinished = this.tourney.score(match.id, resultArray);
+    match.reason = match.state = results.reason;
     if (!isFinished) {
-      isFinished = this.tourney.score(game.id, [results.valueWhitePieces, results.valueBlackPieces]);
+      isFinished = this.tourney.score(match.id, [results.valueWhitePieces, results.valueBlackPieces]);
       if (isFinished) {
-        game.reason = game.state = 'Won by points'
+        match.reason = match.state = 'Won by points'
       } else {
         resultArray = _.shuffle([1, 0]);
-        this.tourney.score(game.id, resultArray);
-        game.reason = game.state = 'Won by coin';
+        this.tourney.score(match.id, resultArray);
+        match.reason = match.state = 'Won by coin';
       }
     }
     this.updateClient();
@@ -182,10 +183,18 @@ var Tournament = class Tournament {
     this.currentlyPlayingMatch = game;
     black.join(game.gameId);
     white.join(game.gameId);
+    setTimeout(() => { this.checkIfGameHasStarted(game.gameId) }, 45000);
   }
+
+  checkIfGameHasStarted(gameId) {
+    var match = this.getMatch(gameId)
+    if (!match || match.started) return;
+    var gameState = { result: '0-0', reason: 'No players joined game', valueWhitePieces: 0, valueBlackPieces: 0 }
+    this.updateGameWithResults(match, gameState)
+  }
+
   createGameId(game) {
-    var names = game.white.name + game.black.name;
-    var gameId = hash.sha256().update(names).digest('hex');
+    var gameId = hash.sha256().update(game.white.name).digest('hex');
     return gameId + game.id.s + game.id.r + game.id.m + Date.now();
   }
   isBothPlayersSet(match) {

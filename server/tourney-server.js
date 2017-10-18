@@ -32,9 +32,11 @@ io.on('connect', socket => {
   socket.on('enter', playerName => {
     if (players.some(player => { return player.name === playerName })) return;
     if (players.some(player => { return player.id === socket.id })) return;
-    players.push(new Player(socket, playerName));
+    var player = new Player(socket, playerName);
+    players.push(player);
+    globalTourney.addPlayer(player);
     api.broadcast('players', players);
-    console.log('New player entered lobby, %s', playerName);
+    console.log('New player entered tourney, %s', playerName);
   })
 
   socket.on('leave', () => {

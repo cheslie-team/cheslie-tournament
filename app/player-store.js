@@ -36,7 +36,7 @@ class PlayerStore extends ReduceStore {
                 return state.update(player => { return player.id === action.player.id ? action.player : player });
 
             case ActionTypes.REMOVE_PLAYER_FROM_TOURNEY:
-                TourneyAPI.findPlayerToTourney(action.player);
+                TourneyAPI.removePlayerFromTourney(action.player);
                 return state;
 
             case ActionTypes.ADD_PLAYER_TO_TOURNEY:
