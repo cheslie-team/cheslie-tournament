@@ -183,7 +183,7 @@ var Tournament = class Tournament {
     this.currentlyPlayingMatch = game;
     black.join(game.gameId);
     white.join(game.gameId);
-    setTimeout(() => { this.checkIfGameHasStarted(game.gameId) }, 45000);
+    // setTimeout(() => { this.checkIfGameHasStarted(game.gameId) }, 45000);
   }
 
   checkIfGameHasStarted(gameId) {
