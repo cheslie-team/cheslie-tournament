@@ -47,6 +47,8 @@ var TournamentMapper = class TournamentMapper {
     return match.m[0] !== 0 || match.m[1] !== 0;
   }
   mapMatchToClientMatch(match) {
+    if(!match) return;
+    
     return {
       gameId: match.gameId,
       id: match.gameId,
