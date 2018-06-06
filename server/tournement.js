@@ -108,6 +108,7 @@ var Tournament = class Tournament {
 
       match.started = game.started;
       var clientMatch = this.mapper.mapMatchToClientMatch(match);
+      if(!clientMatch) return;
       this.api.broadcast('match-started', clientMatch);
     })
   }
